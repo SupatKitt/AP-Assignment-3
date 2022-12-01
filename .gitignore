@@ -1,3 +1,19 @@
 
 .DS_Store
 JuceLibraryCode
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/project.pbxproj
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/project.xcworkspace/xcuserdata/supatkittawornrat.xcuserdatad/UserInterfaceState.xcuserstate
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/xcshareddata/xcschemes/AudioProgramming_AMB_Synth - VST3.xcscheme
+Builds/MacOSX/AudioProgramming_AMB_Synth.xcodeproj/xcuserdata/supatkittawornrat.xcuserdatad/xcschemes/xcschememanagement.plist
+Builds/MacOSX/build/Debug/AudioProgramming_AMB_Synth.app/Contents/Info.plist
+Builds/MacOSX/build/Debug/AudioProgramming_AMB_Synth.app/Contents/MacOS/AudioProgramming_AMB_Synth
+Builds/MacOSX/build/Debug/AudioProgramming_AMB_Synth.app/Contents/PkgInfo
+Builds/MacOSX/build/Debug/AudioProgramming_AMB_Synth.app/Contents/Resources/RecentFilesMenuTemplate.nib
+Builds/MacOSX/build/Debug/AudioProgramming_AMB_Synth.vst3
+Builds/MacOSX/build/Debug/libAudioProgramming_AMB_Synth.a
+Builds/MacOSX/Info-AU.plist
+Builds/MacOSX/Info-Standalone_Plugin.plist
+Builds/MacOSX/Info-VST3.plist
+Builds/MacOSX/RecentFilesMenuTemplate.nib
