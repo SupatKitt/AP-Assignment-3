@@ -25,11 +25,11 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f)
-//    std::make_unique<juce::AudioParameterFloat>("sample attack", "Sample attack time", 0.001f, 5.0f, 1.0f),
-//    std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.001f, 5.0f, 1.0f),
-//    std::make_unique<juce::AudioParameterFloat>("sample sustain", "Sample sustain value", 0.001f, 5.0f, 1.0f),
-//    std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.001f, 5.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f),
+    std::make_unique<juce::AudioParameterFloat>("sample attack", "Sample attack time", 0.1f, 20.0f, 5.0f),
+    std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.1f, 20.0f, 5.0f),
+    std::make_unique<juce::AudioParameterFloat>("sample sustain", "Sample sustain value", 0.1f, 0.9f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.1f, 20.0f, 5.0f),
 })
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
@@ -44,7 +44,7 @@ apvts(*this, nullptr, "ParameterTreeState", {
     // add "sound" to synth use to control parts of keyboard not important right now
     synth.addSound(new MySynthSound() );
     
-    for (int voiceNum=0; voiceNum < voiceCount; voiceNum++)
+    for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
         MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
         voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
@@ -52,11 +52,11 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"));
         
-//        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
-//        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sample attack"),
-//                                               apvts.getRawParameterValue("sample decay"),
-//                                               apvts.getRawParameterValue("sample sustain"),
-//                                               apvts.getRawParameterValue("sample release"));
+        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
+        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sample attack"),
+                                               apvts.getRawParameterValue("sample decay"),
+                                               apvts.getRawParameterValue("sample sustain"),
+                                               apvts.getRawParameterValue("sample release"));
     }
 //    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
 //    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
@@ -64,16 +64,16 @@ apvts(*this, nullptr, "ParameterTreeState", {
 //    sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize);
 //    sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize);
     
-    randNum = randomer.nextInt(4);
+    randNum = randomer.nextInt(5);
     //DBG(randNum);
         switch (randNum)
         {
-            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize,randNum); break ;}
-            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize,randNum); break ;}
-            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize,randNum); break ;}
-            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize,randNum); break ;}
-            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize,randNum); break ;}
-                //default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
+            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize,randNum); break ;}
+            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize,randNum); break ;}
+            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize,randNum); break ;}
+            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize,randNum); break ;}
+            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize,randNum); break ;}
+            default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize, randNum); break;
 
         }
 }

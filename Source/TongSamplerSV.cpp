@@ -66,8 +66,19 @@
         
         bool TongSamplerVoice::canPlaySound (SynthesiserSound* sound)
         {
-            return dynamic_cast<const SamplerSound*> (sound) != nullptr;
+            return dynamic_cast<const TongSamplerSound*> (sound) != nullptr;
         }
+
+void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sattackParam
+                                                 ,std::atomic<float>* _sdecayParam
+                                                 ,std::atomic<float>* _ssustainParam
+                                                 ,std::atomic<float>* _sreleaseParam)
+    {
+        attackParam = _sattackParam;
+        decayParam = _sdecayParam;
+        sustainParam = _ssustainParam;
+        releaseParam = _sreleaseParam;
+    }
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
@@ -79,19 +90,17 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                 adsr.setSampleRate(getSampleRate());
                 juce::ADSR::Parameters envParam;
                 
-                envParam.attack = 0.1;
-                envParam.decay = 0.1;
-                envParam.sustain = 0.5;
-                envParam.release = 0.5;
-                
+                envParam.attack = *attackParam;
+                envParam.decay = *decayParam;
+                envParam.sustain = *sustainParam;
+                envParam.release = *releaseParam;
+                DBG(*decayParam);
                 adsr.setParameters(envParam);
                 
                 sourceSamplePosition = 0.0;
                 lgain = velocity;
                 rgain = velocity;
-                
-                adsr.setSampleRate (sound->tsourceSampleRate);
-                adsr.setParameters (sound->tparams);
+
                 
                 adsr.noteOn();
             }
@@ -116,25 +125,11 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
         }
         
         
-//        void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
-//        void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
-//
-//        void connectEnvelopeParameters(std::atomic<float>* _sattackParam
-//                                       ,std::atomic<float>* _sdecayParam
-//                                       ,std::atomic<float>* _ssustainParam
-//                                       ,std::atomic<float>* _sreleaseParam)
-//            {
-//
-//            }
-void pitchWheelMoved (int /*newValue*/)
-{
-    
-}
+        void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
+        void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
 
-void controllerMoved (int /*controllerNumber*/, int /*newValue*/)
-{
-    
-}
+
+
 
         //==============================================================================
         void TongSamplerVoice::renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples)

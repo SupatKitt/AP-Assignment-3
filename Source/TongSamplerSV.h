@@ -44,6 +44,7 @@ private:
     
     ADSR::Parameters tparams;
     friend class TongSamplerVoice;
+    
 };
 
 class TongSamplerVoice : public juce::SynthesiserVoice
@@ -71,6 +72,7 @@ public:
     
     void renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override ;
     
+    
 private:
     
     double pitchRatio = 0;
@@ -79,10 +81,10 @@ private:
 
     ADSR adsr;
     
-//    std::atomic<float>* attackParam;
-//    std::atomic<float>* decayParam;
-//    std::atomic<float>* sustainParam;
-//    std::atomic<float>* releaseParam;
+    std::atomic<float>* attackParam;
+    std::atomic<float>* decayParam;
+    std::atomic<float>* sustainParam;
+    std::atomic<float>* releaseParam;
     
 };
 

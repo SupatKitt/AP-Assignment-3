@@ -56,6 +56,7 @@ public:
         sustainParam = _sustainParam;
         releaseParam = _releaseParam;
     }
+    
     // ASK how the midi data pass here is it becuase MySynthVoice is inherited from SynthesiserVoice class?
     
     void startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound*, int /*currentPitchWheelPosition*/) override
