@@ -18,6 +18,9 @@
             file="Resources/ForestNight5.wav"/>
     </GROUP>
     <GROUP id="{88AFB2A6-E199-A2EE-6459-BC58B3F161AA}" name="Source">
+      <FILE id="DCSHw0" name="TongSamplerSV.cpp" compile="1" resource="0"
+            file="Source/TongSamplerSV.cpp"/>
+      <FILE id="ZMp0PQ" name="TongSamplerSV.h" compile="0" resource="0" file="Source/TongSamplerSV.h"/>
       <FILE id="bMuhvF" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="mjS8DM" name="PluginProcessor.h" compile="0" resource="0"

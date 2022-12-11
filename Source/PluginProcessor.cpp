@@ -29,26 +29,43 @@ apvts(*this, nullptr, "ParameterTreeState", {
 })
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
-        //for adding another input key
-        synth.clearVoices();
-        for (int i = 0; i < voiceCount; i++)
-        {
-            synth.addVoice(new MySynthVoice() );
-            sampler.addVoice(new juce::SamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
-        }
-        synth.clearSounds();
-        // add "sound" to synth use to control parts of keyboard not important right now
-        synth.addSound(new MySynthSound() );
-        
-        for (int voiceNum=0; voiceNum < voiceCount; voiceNum++)
-        {
-            MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
-            voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
-                                                apvts.getRawParameterValue("decay"),
-                                                apvts.getRawParameterValue("sustain"),
-                                                apvts.getRawParameterValue("release"));
-        }
+    //for adding another input key
+    synth.clearVoices();
+    for (int i = 0; i < voiceCount; i++)
+    {
+        synth.addVoice(new MySynthVoice() );
+        sampler.addVoice(new juce::SamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
+    }
+    synth.clearSounds();
+    // add "sound" to synth use to control parts of keyboard not important right now
+    synth.addSound(new MySynthSound() );
+    
+    for (int voiceNum=0; voiceNum < voiceCount; voiceNum++)
+    {
+        MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
+        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
+                                            apvts.getRawParameterValue("decay"),
+                                            apvts.getRawParameterValue("sustain"),
+                                            apvts.getRawParameterValue("release"));
+    }
     sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
+//    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
+//    sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize);
+//    sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize);
+//    sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize);
+    
+   // randNum = randomer.nextInt(4);
+    //DBG(randNum);
+//        switch (randNum)
+//        {
+//            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+//            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+//            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+//            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+//            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+//                //default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
+//
+//        }
 }
 
 AudioProgramming_AMB_SynthAudioProcessor::~AudioProgramming_AMB_SynthAudioProcessor()
@@ -124,6 +141,8 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     // initialisation that you need..
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
+    //sampler.setRandNum();
+    //randNum = sampler.getRandNum();
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
