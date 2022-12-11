@@ -26,11 +26,11 @@ public:
                       double releaseTimeSecs,
                       double maxSampleLengthSeconds);
     //destructor
-    ~TongSamplerSound();
+    ~TongSamplerSound()override;
     
-    bool appliesToNote (int midiNoteNumber);
+    bool appliesToNote (int midiNoteNumber) override;
     
-    bool appliesToChannel (int /*midiChannel*/);
+    bool appliesToChannel (int /*midiChannel*/) override;
     
     
     
@@ -38,7 +38,7 @@ private:
     
     String tname;
     std::unique_ptr<AudioBuffer<float>> tdata;
-    double tsourceSampleRate;
+    double sourceSampleRate;
     BigInteger tmidiNotes;
     int tlength = 0, tmidiRootNote = 0;
     
@@ -49,22 +49,22 @@ private:
 class TongSamplerVoice : public juce::SynthesiserVoice
 {
 public:
-    
+    ///constructor
     TongSamplerVoice();
+    ///destructor
+    ~TongSamplerVoice() override;
     
-    ~TongSamplerVoice();
+    bool canPlaySound (SynthesiserSound* sound) override ;
     
-    bool canPlaySound (SynthesiserSound* sound);
+    void startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) override ;
     
-    void startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/);
+    void stopNote (float /*velocity*/, bool allowTailOff) override ;
     
-    void stopNote (float /*velocity*/, bool allowTailOff);
+    void pitchWheelMoved (int /*newValue*/) override ;
     
-    void pitchWheelMoved (int /*newValue*/);
+    void controllerMoved (int /*controllerNumber*/, int /*newValue*/) override ;
     
-    void controllerMoved (int /*controllerNumber*/, int /*newValue*/);
-    
-    void renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples);
+    void renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override ;
     
 private:
     

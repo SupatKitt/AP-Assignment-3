@@ -43,7 +43,7 @@
         
         bool TongSamplerSound::appliesToNote (int midiNoteNumber)
         {
-            return tmidiNotes[midiNoteNumber];
+            return tmidiNotes[midiNoteNumber]; // can enter return true instead
         }
         
         bool TongSamplerSound::appliesToChannel (int /*midiChannel*/)
@@ -57,7 +57,7 @@
         {
             
         }
-        
+         
     TongSamplerVoice::~TongSamplerVoice() //destructor
         {
             
@@ -68,7 +68,7 @@
             return dynamic_cast<const SamplerSound*> (sound) != nullptr;
         }
         
-        void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/)
+void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
             if (auto* sound = dynamic_cast<const SamplerSound*> (s))
             {

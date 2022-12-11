@@ -66,7 +66,7 @@ private:
     
     juce::Synthesiser synth;
     
-    int voiceCount = 10;
+    int voiceCount = 6;
     
     TongSampler sampler;
     juce::Random randomer;
