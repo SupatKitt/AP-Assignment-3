@@ -35,13 +35,13 @@ public:
     }
     
     void setRandNum()
-    {
-        randNum = randomizer.nextInt(4);
-    }
-    
+     {
+         randNum = randomizer.nextInt(4);
+     }
+     
     void setSample(const void* sourceData, size_t sourceDataSize)
     {
-        //formatmanager.registerBasicFormats();
+        formatmanager.registerBasicFormats();
 //        juce::BigInteger allNotes;
 //        allNotes.setRange(0, 128, true);
 //        switch (randNum)
@@ -80,6 +80,8 @@ public:
         juce::BigInteger allNotes;
         allNotes.setRange(0, 128, true);
         addSound( new TongSamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) ); //name, format reader, range of notes, centerkey, attack, release, maximumduration
+        
+        //I cant use my TongSamplerSound here it cause jassert error
         
     }
 //    ~TongSampler()

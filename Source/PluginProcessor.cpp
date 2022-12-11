@@ -34,7 +34,7 @@ apvts(*this, nullptr, "ParameterTreeState", {
     for (int i = 0; i < voiceCount; i++)
     {
         synth.addVoice(new MySynthVoice() );
-        sampler.addVoice(new juce::SamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
+        sampler.addVoice(new TongSamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
     }
     synth.clearSounds();
     // add "sound" to synth use to control parts of keyboard not important right now
