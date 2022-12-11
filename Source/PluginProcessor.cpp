@@ -48,24 +48,24 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"));
     }
-    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
+//    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
 //    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
 //    sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize);
 //    sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize);
 //    sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize);
     
-   // randNum = randomer.nextInt(4);
+    randNum = randomer.nextInt(4);
     //DBG(randNum);
-//        switch (randNum)
-//        {
-//            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
-//            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
-//            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
-//            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
-//            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
-//                //default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
-//
-//        }
+        switch (randNum)
+        {
+            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize,randNum); break ;}
+            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize,randNum); break ;}
+            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize,randNum); break ;}
+            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize,randNum); break ;}
+            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize,randNum); break ;}
+                //default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
+
+        }
 }
 
 AudioProgramming_AMB_SynthAudioProcessor::~AudioProgramming_AMB_SynthAudioProcessor()

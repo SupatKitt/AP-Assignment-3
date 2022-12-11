@@ -69,8 +69,8 @@ private:
     int voiceCount = 10;
     
     TongSampler sampler;
-//    juce::Random randomer;
-//    int randNum;
+    juce::Random randomer;
+    int randNum;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
