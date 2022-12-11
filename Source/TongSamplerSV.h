@@ -38,7 +38,7 @@ private:
     
     String tname;
     std::unique_ptr<AudioBuffer<float>> tdata;
-    double sourceSampleRate;
+    double tsourceSampleRate;
     BigInteger tmidiNotes;
     int tlength = 0, tmidiRootNote = 0;
     
@@ -53,6 +53,11 @@ public:
     TongSamplerVoice();
     ///destructor
     ~TongSamplerVoice() override;
+    
+    void connectEnvelopeParameters(std::atomic<float>* _sattackParam
+                                   ,std::atomic<float>* _sdecayParam
+                                   ,std::atomic<float>* _ssustainParam
+                                   ,std::atomic<float>* _sreleaseParam);
     
     bool canPlaySound (SynthesiserSound* sound) override ;
     
@@ -73,6 +78,11 @@ private:
     float lgain = 0, rgain = 0;
 
     ADSR adsr;
+    
+//    std::atomic<float>* attackParam;
+//    std::atomic<float>* decayParam;
+//    std::atomic<float>* sustainParam;
+//    std::atomic<float>* releaseParam;
     
 };
 

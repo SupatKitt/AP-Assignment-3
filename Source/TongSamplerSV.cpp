@@ -62,6 +62,7 @@
         {
             
         }
+
         
         bool TongSamplerVoice::canPlaySound (SynthesiserSound* sound)
         {
@@ -70,10 +71,20 @@
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
-            if (auto* sound = dynamic_cast<const SamplerSound*> (s))
+            if (auto* sound = dynamic_cast<const TongSamplerSound*> (s))
             {
                 pitchRatio = std::pow (2.0, (midiNoteNumber - sound->tmidiRootNote) / 12.0)
                 * sound->tsourceSampleRate / getSampleRate();
+                
+                adsr.setSampleRate(getSampleRate());
+                juce::ADSR::Parameters envParam;
+                
+                envParam.attack = 0.1;
+                envParam.decay = 0.1;
+                envParam.sustain = 0.5;
+                envParam.release = 0.5;
+                
+                adsr.setParameters(envParam);
                 
                 sourceSamplePosition = 0.0;
                 lgain = velocity;
@@ -92,6 +103,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
         
         void TongSamplerVoice::stopNote (float /*velocity*/, bool allowTailOff)
         {
+            
             if (allowTailOff)
             {
                 adsr.noteOff();
@@ -104,13 +116,30 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
         }
         
         
-        void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
-        void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
-        
+//        void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
+//        void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
+//
+//        void connectEnvelopeParameters(std::atomic<float>* _sattackParam
+//                                       ,std::atomic<float>* _sdecayParam
+//                                       ,std::atomic<float>* _ssustainParam
+//                                       ,std::atomic<float>* _sreleaseParam)
+//            {
+//
+//            }
+void pitchWheelMoved (int /*newValue*/)
+{
+    
+}
+
+void controllerMoved (int /*controllerNumber*/, int /*newValue*/)
+{
+    
+}
+
         //==============================================================================
         void TongSamplerVoice::renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
         {
-            if (auto* playingSound = static_cast<SamplerSound*> (getCurrentlyPlayingSound().get())) // get playing sound from constructor
+            if (auto* playingSound = static_cast<TongSamplerSound*> (getCurrentlyPlayingSound().get())) // get playing sound from constructor
             {
                 // sound goes in here
                 auto& data = *playingSound->tdata;
@@ -136,7 +165,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
-                    // add if statement to loop the sample here
+                    
                     
                     if (outR != nullptr)
                     {
@@ -156,6 +185,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                         //stopNote (0.0f, false);
                         break;
                     }
+                    
                 }
             }
         }

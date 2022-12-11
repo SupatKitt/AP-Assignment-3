@@ -26,6 +26,10 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f)
+//    std::make_unique<juce::AudioParameterFloat>("sample attack", "Sample attack time", 0.001f, 5.0f, 1.0f),
+//    std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.001f, 5.0f, 1.0f),
+//    std::make_unique<juce::AudioParameterFloat>("sample sustain", "Sample sustain value", 0.001f, 5.0f, 1.0f),
+//    std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.001f, 5.0f, 1.0f),
 })
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
@@ -47,6 +51,12 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                             apvts.getRawParameterValue("decay"),
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"));
+        
+//        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
+//        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sample attack"),
+//                                               apvts.getRawParameterValue("sample decay"),
+//                                               apvts.getRawParameterValue("sample sustain"),
+//                                               apvts.getRawParameterValue("sample release"));
     }
 //    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
 //    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
