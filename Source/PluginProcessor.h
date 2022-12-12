@@ -61,8 +61,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-    
+    float noteStore;
+    float sampleStore;
     juce::AudioProcessorValueTreeState apvts;
+    
+    //FilterParameter
+    std::atomic<float>* noteLowpasscutoffFreq;
+    std::atomic<float>* noteLowpassQ;
     
     juce::Synthesiser synth;
     
@@ -72,6 +77,7 @@ private:
     juce::Random randomer;
     int randNum;
 
+    juce::IIRFilter noteLowpass;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
 };

@@ -30,6 +30,8 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.1f, 20.0f, 5.0f),
     std::make_unique<juce::AudioParameterFloat>("sample sustain", "Sample sustain value", 0.1f, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.1f, 20.0f, 5.0f),
+    std::make_unique<juce::AudioParameterInt>("note cutoff freq", "Note cutoff Frequency", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat>("filter Q", "Filter Q", 0.01, 10.0f, 0.01)
 })
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
@@ -57,6 +59,10 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                                apvts.getRawParameterValue("sample decay"),
                                                apvts.getRawParameterValue("sample sustain"),
                                                apvts.getRawParameterValue("sample release"));
+        
+        noteLowpasscutoffFreq = apvts.getRawParameterValue("note cutoff freq");
+        noteLowpassQ = apvts.getRawParameterValue("filter Q");
+        
     }
 //    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
 //    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
@@ -153,6 +159,7 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     sampler.setCurrentPlaybackSampleRate(sampleRate);
     //sampler.setRandNum();
     //randNum = sampler.getRandNum();
+    
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -192,6 +199,8 @@ void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<f
     juce::ScopedNoDenormals noDenormals;
     
     buffer.clear();
+    noteLowpass.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *noteLowpasscutoffFreq, *noteLowpassQ));
+    //noteStore = noteLowpass.processSingleSampleRaw(<#float sample#>);
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
     //
@@ -211,15 +220,21 @@ juce::AudioProcessorEditor* AudioProgramming_AMB_SynthAudioProcessor::createEdit
 //==============================================================================
 void AudioProgramming_AMB_SynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+    {
+        if (xmlState->hasTagName (apvts.state.getType()))
+        {
+            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
+        }
+    }
 }
 
 //==============================================================================
