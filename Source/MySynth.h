@@ -46,7 +46,8 @@ public:
      @param SynthesiserSound unused variable
      @param / unused variable
      */
-    void connectEnvelopeParameters(std::atomic<float>* _attackParam
+    void connectEnvelopeParameters(std::atomic<float>* _gain
+                                   ,std::atomic<float>* _attackParam
                                    ,std::atomic<float>* _decayParam
                                    ,std::atomic<float>* _sustainParam
                                    ,std::atomic<float>* _releaseParam
@@ -55,10 +56,12 @@ public:
                                    ,std::atomic<float>* _noteLowpasscutoffFreqR
                                    ,std::atomic<float>* _noteLowpassQR)
     {
+        gain = _gain;
         attackParam = _attackParam;
         decayParam = _decayParam;
         sustainParam = _sustainParam;
         releaseParam = _releaseParam;
+        
         
         localNoteLowpasscutoffFreqL = _noteLowpasscutoffFreqL;
         localNoteLowpassQL = _noteLowpassQL;
@@ -89,7 +92,7 @@ public:
         
         env.noteOn();
         
-        gain = velocity;
+        localVelocity = velocity;
         
         float freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         osc.setFrequency(freq);
@@ -135,13 +138,13 @@ public:
                  for (int i = startSample; i < numSamples+startSample ; i++ )
                  {
                      float envVal = env.getNextSample(); // if make an envelop filter it will end up here
-                     float sineVal = osc.process() * envVal * gain;
+                     float sineVal = osc.process() * envVal * localVelocity;
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
                      float filteredL = filterL.processSingleSampleRaw(sineVal);
                      float filteredR = filterR.processSingleSampleRaw(sineVal);
                      
-                     left[i] += filteredL * 0.3;
-                     right[i] += filteredR * 0.3;
+                     left[i] += filteredL *  *gain;
+                     right[i] += filteredR *  *gain;
                      
                      if(! env.isActive())//move stop note to here (! means if envelope is not active)
                      {
@@ -179,7 +182,9 @@ public:
             
         SineOsc osc;
         juce::ADSR env;
-        float gain;
+    
+        float localVelocity;
+        std::atomic<float>* gain;
     
         std::atomic<float>* attackParam;
         std::atomic<float>* decayParam;
@@ -195,3 +200,7 @@ public:
         std::atomic<float>*  localNoteLowpasscutoffFreqR;
         std::atomic<float>*  localNoteLowpassQR;
 };
+
+// gain in note and sampler
+// disable velocity
+

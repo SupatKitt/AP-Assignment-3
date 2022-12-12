@@ -23,6 +23,7 @@ AudioProgramming_AMB_SynthAudioProcessor::AudioProgramming_AMB_SynthAudioProcess
 #endif
 //use parametervaluetreestate function here
 apvts(*this, nullptr, "ParameterTreeState", {
+    std::make_unique<juce::AudioParameterFloat>("gain", "Note Gain", 0.001f, 0.5f, 0.9f),
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
@@ -55,7 +56,8 @@ apvts(*this, nullptr, "ParameterTreeState", {
     for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
         MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
-        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
+        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("gain"),
+                                            apvts.getRawParameterValue("attack"),
                                             apvts.getRawParameterValue("decay"),
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"),
