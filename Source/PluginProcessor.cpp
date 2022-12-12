@@ -21,18 +21,22 @@ AudioProgramming_AMB_SynthAudioProcessor::AudioProgramming_AMB_SynthAudioProcess
                      #endif
                        ),
 #endif
+//use parametervaluetreestate function here
 apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f),
-    std::make_unique<juce::AudioParameterFloat>("sample attack", "Sample attack time", 0.1f, 20.0f, 5.0f),
-    std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.1f, 20.0f, 5.0f),
+    std::make_unique<juce::AudioParameterFloat>("sample attack", "Sample attack time", 0.1f, 20.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sample decay", "Sample decay time", 0.1f, 20.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("sample sustain", "Sample sustain value", 0.1f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.1f, 20.0f, 5.0f),
-    std::make_unique<juce::AudioParameterInt>("note cutoff freq", "Note cutoff Frequency", 1, 20000, 20000),
-    std::make_unique<juce::AudioParameterFloat>("filter Q", "Filter Q", 0.01, 10.0f, 0.01)
+    std::make_unique<juce::AudioParameterFloat>("sample release", "Sample release time", 0.1f, 20.0f, 2.0f),
+    std::make_unique<juce::AudioParameterFloat>("note cutoff freqL", "Note cutoff Frequency L", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat>("filter QL", "Filter Q L", 0.01, 10.0f, 0.01),
+    std::make_unique<juce::AudioParameterFloat>("note cutoff freqR", "Note cutoff Frequency R", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat>("filter QR", "Filter Q R", 0.01, 10.0f, 0.01)
 })
+//constructor
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
     //for adding another input key
@@ -40,19 +44,25 @@ apvts(*this, nullptr, "ParameterTreeState", {
     for (int i = 0; i < voiceCount; i++)
     {
         synth.addVoice(new MySynthVoice() );
-        sampler.addVoice(new TongSamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
+        sampler.addVoice(new TongSamplerVoice());
+        //create the samplevoice to detect the ending of sound, play with binary data number in percent
     }
     synth.clearSounds();
     // add "sound" to synth use to control parts of keyboard not important right now
     synth.addSound(new MySynthSound() );
     
+    //link parametervalue with the UI, with parameter ID
     for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
         MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
         voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
                                             apvts.getRawParameterValue("decay"),
                                             apvts.getRawParameterValue("sustain"),
-                                            apvts.getRawParameterValue("release"));
+                                            apvts.getRawParameterValue("release"),
+                                            apvts.getRawParameterValue("note cutoff freqL"),
+                                            apvts.getRawParameterValue("filter QL"),
+                                            apvts.getRawParameterValue("note cutoff freqR"),
+                                            apvts.getRawParameterValue("filter QR"));
         
         TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
         samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sample attack"),
@@ -64,24 +74,21 @@ apvts(*this, nullptr, "ParameterTreeState", {
         noteLowpassQ = apvts.getRawParameterValue("filter Q");
         
     }
-//    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
-//    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
-//    sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize);
-//    sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize);
-//    sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize);
-    
-    randNum = randomer.nextInt(5);
-    //DBG(randNum);
-        switch (randNum)
-        {
-            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize,randNum); break ;}
-            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize,randNum); break ;}
-            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize,randNum); break ;}
-            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize,randNum); break ;}
-            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize,randNum); break ;}
-            default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize, randNum); break;
+    // trying to create a sampler random with switch/case
+    myRandomInt = randomer.nextInt(6);
 
-        }
+    switch (myRandomInt)
+    {
+        case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+        case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+        case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+        case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+        case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+        case 6 :{ sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break ;}
+        default : sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break;
+
+   }
+    
 }
 
 AudioProgramming_AMB_SynthAudioProcessor::~AudioProgramming_AMB_SynthAudioProcessor()
@@ -157,9 +164,8 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     // initialisation that you need..
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
-    //sampler.setRandNum();
-    //randNum = sampler.getRandNum();
-    
+    //srand(time(NULL));
+
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -197,13 +203,12 @@ bool AudioProgramming_AMB_SynthAudioProcessor::isBusesLayoutSupported (const Bus
 void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    
     buffer.clear();
-    noteLowpass.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *noteLowpasscutoffFreq, *noteLowpassQ));
+    //noteLowpass.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *noteLowpasscutoffFreq, *noteLowpassQ));
     //noteStore = noteLowpass.processSingleSampleRaw(<#float sample#>);
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-    //
+    
 }
 
 //==============================================================================

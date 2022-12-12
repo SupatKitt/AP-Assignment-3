@@ -34,72 +34,33 @@ public:
 //        addSound( new juce::SamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) ); //name, format reader, range of notes, centerkey, attack, release, maximumduration
     }
     
-    void setRandNum()
-     {
-         randNum = randomizer.nextInt(4);
-     }
      
-    void setSample(const void* sourceData, size_t sourceDataSize, int RandNum)
+    void setSample(const void* sourceData, size_t sourceDataSize)
     {
-        formatmanager.registerBasicFormats();
-        juce::BigInteger allNotes;
-        allNotes.setRange(0, 128, true);
-        switch (randNum)
+        if(checker == false)
         {
-            case 1 :{
-                auto* reader1 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize, false));
-                addSound( new TongSamplerSound("default0", *reader1, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
-            case 2 :{
-                auto* reader2 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize, false));
-                addSound( new TongSamplerSound("default1", *reader2, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
-            case 3 :{
-                auto* reader3 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize, false));
-                addSound( new TongSamplerSound("default2", *reader3, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
-            case 4 :{
-                auto* reader4 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize, false));
-                addSound( new TongSamplerSound("default3", *reader4, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
-            case 5 :{
-                auto* reader5 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize, false));
-                addSound( new TongSamplerSound("default4", *reader5, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
-            default:{
-                auto* reader1 = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize, false));
-                addSound( new TongSamplerSound("default0", *reader1, allNotes, 60, 0, 0.1, 10.0f ) );
-                break;
-            }
+            formatmanager.registerBasicFormats();
+            checker = true;
         }
         
         
-//        auto* reader = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize, false));
-//        juce::BigInteger allNotes;
-//        allNotes.setRange(0, 128, true);
-//        addSound( new TongSamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) ); //name, format reader, range of notes, centerkey, attack, release, maximumduration
+        auto* reader = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(sourceData, sourceDataSize, false));
+        juce::BigInteger allNotes;
+        allNotes.setRange(0, 128, true);
+        addSound( new TongSamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) );
         
-        //I cant use my TongSamplerSound here it cause jassert error
+        //name, format reader, range of notes, centerkey, attack, release, maximumduration
+        
+        
         
     }
-//    ~TongSampler()
-//    {
-//        delete ;
-//    }
-    int getRandNum()
-    {
-        return randNum;
-    }
+ 
 private:
+            
     juce::AudioFormatManager formatmanager;
     
-    int randNum;
-    juce::Random randomizer;
+    bool checker = false ;
+
 };
 
-// try put the randomizer here
+

@@ -94,13 +94,13 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                 envParam.decay = *decayParam;
                 envParam.sustain = *sustainParam;
                 envParam.release = *releaseParam;
-                DBG(*decayParam);
+
                 adsr.setParameters(envParam);
                 
                 sourceSamplePosition = 0.0;
                 lgain = velocity;
                 rgain = velocity;
-
+                //DBG(lgain);
                 
                 adsr.noteOn();
             }
@@ -126,6 +126,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
         
         
         void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
+
         void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
 
 

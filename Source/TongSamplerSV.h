@@ -13,6 +13,7 @@
 
 using namespace juce;
 
+/**inherited from SynthesiserSound;  This allows more than one SynthesiserVoice to play the same sound at the same time.*/
 class TongSamplerSound : public juce::SynthesiserSound
 {
 public:

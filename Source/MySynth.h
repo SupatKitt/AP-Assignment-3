@@ -49,12 +49,21 @@ public:
     void connectEnvelopeParameters(std::atomic<float>* _attackParam
                                    ,std::atomic<float>* _decayParam
                                    ,std::atomic<float>* _sustainParam
-                                   ,std::atomic<float>* _releaseParam)
+                                   ,std::atomic<float>* _releaseParam
+                                   ,std::atomic<float>* _noteLowpasscutoffFreqL
+                                   ,std::atomic<float>* _noteLowpassQL
+                                   ,std::atomic<float>* _noteLowpasscutoffFreqR
+                                   ,std::atomic<float>* _noteLowpassQR)
     {
         attackParam = _attackParam;
         decayParam = _decayParam;
         sustainParam = _sustainParam;
         releaseParam = _releaseParam;
+        
+        localNoteLowpasscutoffFreqL = _noteLowpasscutoffFreqL;
+        localNoteLowpassQL = _noteLowpassQL;
+        localNoteLowpasscutoffFreqR = _noteLowpasscutoffFreqR;
+        localNoteLowpassQR = _noteLowpassQR;
     }
     
     // ASK how the midi data pass here is it becuase MySynthVoice is inherited from SynthesiserVoice class?
@@ -64,6 +73,11 @@ public:
         osc.setSampleRate(getSampleRate());
         // can set adsr parameter in constructor because it is public
         env.setSampleRate(getSampleRate());
+        
+        //setfilter parameter
+        filterL.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqL, *localNoteLowpassQL));
+        filterR.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqR, *localNoteLowpassQR));
+        
         // create parameter object
         juce::ADSR::Parameters envParam; //(1.0, 0.3, 0.3, 1)you can put an arguement for ADSR after creating parameter object
         // assign parameter via method in ADSR parameters class
@@ -123,8 +137,11 @@ public:
                      float envVal = env.getNextSample(); // if make an envelop filter it will end up here
                      float sineVal = osc.process() * envVal * gain;
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
-                     left[i] += sineVal* 0.3;
-                     right[i] += sineVal* 0.3;
+                     float filteredL = filterL.processSingleSampleRaw(sineVal);
+                     float filteredR = filterR.processSingleSampleRaw(sineVal);
+                     
+                     left[i] += filteredL * 0.3;
+                     right[i] += filteredR * 0.3;
                      
                      if(! env.isActive())//move stop note to here (! means if envelope is not active)
                      {
@@ -168,4 +185,13 @@ public:
         std::atomic<float>* decayParam;
         std::atomic<float>* sustainParam;
         std::atomic<float>* releaseParam;
+    
+        juce::IIRFilter filterL;
+        juce::IIRFilter filterR;
+    
+    
+        std::atomic<float>*  localNoteLowpasscutoffFreqL;
+        std::atomic<float>*  localNoteLowpassQL;
+        std::atomic<float>*  localNoteLowpasscutoffFreqR;
+        std::atomic<float>*  localNoteLowpassQR;
 };

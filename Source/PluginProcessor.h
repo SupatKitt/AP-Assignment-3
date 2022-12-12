@@ -13,7 +13,7 @@
 #include "Tong_Osc.h"
 #include "Tong_Sampler.h"
 #include "TongSamplerSV.h"
-
+#include <ctime>
 //==============================================================================
 /**
 */
@@ -74,8 +74,16 @@ private:
     int voiceCount = 6;
     
     TongSampler sampler;
+    TongSampler sampler2;
+    TongSampler sampler3;
+    TongSampler sampler4;
+    TongSampler sampler5;
+    TongSampler sampler6;
+    
+    
     juce::Random randomer;
-    int randNum;
+    
+    int myRandomInt;
 
     juce::IIRFilter noteLowpass;
     //==============================================================================

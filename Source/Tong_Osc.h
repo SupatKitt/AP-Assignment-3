@@ -10,7 +10,7 @@
 #include<cmath>
 class Phasor
 {
-public: // make all of this visible to all scope until see another keyword
+public:
     
     virtual ~Phasor(){}
     //Setter
@@ -38,18 +38,20 @@ public: // make all of this visible to all scope until see another keyword
         }
         return output(phase); //return the value itself || this initialize virtual function and send float value to output() (child class contain all of this )
     }
+    
     //recieve single element of phase|| this function is use for sending phase data to child class (inheritence)
     virtual float output(float p)
     {
         return p;
     }
     
-private: // for keeping variable safe and work only with function
+private:
      float sampleRate;
      float phase {0};
      float frequency;
      float phaseDelta;
 };
+
 ///Sinusodial Oscillator
 class SineOsc : public Phasor
 {
