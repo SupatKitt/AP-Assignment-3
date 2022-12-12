@@ -56,10 +56,11 @@ public:
     ///destructor
     ~TongSamplerVoice() override;
     
-    void connectEnvelopeParameters(std::atomic<float>* _sattackParam
-                                   ,std::atomic<float>* _sdecayParam
-                                   ,std::atomic<float>* _ssustainParam
-                                   ,std::atomic<float>* _sreleaseParam);
+    void connectEnvelopeParameters(std::atomic<float>* _sGain
+                                   ,std::atomic<float>* _sAttackParam
+                                   ,std::atomic<float>* _sDecayParam
+                                   ,std::atomic<float>* _sSustainParam
+                                   ,std::atomic<float>* _sReleaseParam);
     
     bool canPlaySound (SynthesiserSound* sound) override ;
     
@@ -79,7 +80,7 @@ private:
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
-
+    std::atomic<float>* masterGain;
     ADSR adsr;
     
     std::atomic<float>* attackParam;

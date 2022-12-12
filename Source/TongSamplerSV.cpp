@@ -69,15 +69,17 @@
             return dynamic_cast<const TongSamplerSound*> (sound) != nullptr;
         }
 
-void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sattackParam
-                                                 ,std::atomic<float>* _sdecayParam
-                                                 ,std::atomic<float>* _ssustainParam
-                                                 ,std::atomic<float>* _sreleaseParam)
+void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
+                                                 ,std::atomic<float>* _sAttackParam
+                                                 ,std::atomic<float>* _sDecayParam
+                                                 ,std::atomic<float>* _sSustainParam
+                                                 ,std::atomic<float>* _sReleaseParam)
     {
-        attackParam = _sattackParam;
-        decayParam = _sdecayParam;
-        sustainParam = _ssustainParam;
-        releaseParam = _sreleaseParam;
+        masterGain = _sGain;
+        attackParam = _sAttackParam;
+        decayParam = _sDecayParam;
+        sustainParam = _sSustainParam;
+        releaseParam = _sReleaseParam;
     }
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
@@ -165,8 +167,8 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     
                     if (outR != nullptr)
                     {
-                        *outL++ += l;
-                        *outR++ += r;
+                        *outL++ += l * *masterGain;
+                        *outR++ += r * *masterGain;
                     }
                     else
                     {

@@ -60,6 +60,12 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    int getbufferSize()
+    {
+        return bufferSize;
+    }
+    
+    
 private:
     float noteStore;
     float sampleStore;
@@ -74,11 +80,6 @@ private:
     int voiceCount = 6;
     
     TongSampler sampler;
-    TongSampler sampler2;
-    TongSampler sampler3;
-    TongSampler sampler4;
-    TongSampler sampler5;
-    TongSampler sampler6;
     
     
     juce::Random randomer;
@@ -86,6 +87,7 @@ private:
     int myRandomInt;
 
     juce::IIRFilter noteLowpass;
+    int bufferSize;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
 };
