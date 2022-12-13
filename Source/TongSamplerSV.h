@@ -18,7 +18,7 @@ class TongSamplerSound : public juce::SynthesiserSound
 {
 public:
     
-    //constructor
+    
     TongSamplerSound (const String& soundName,
                       AudioFormatReader& source,
                       const BigInteger& notes,
@@ -26,7 +26,7 @@ public:
                       double attackTimeSecs,
                       double releaseTimeSecs,
                       double maxSampleLengthSeconds);
-    //destructor
+    
     ~TongSamplerSound()override;
     
     bool appliesToNote (int midiNoteNumber) override;
@@ -103,6 +103,8 @@ private:
     std::atomic<float>*  localSamplerHighpassFreq;
     std::atomic<float>*  localSamplerHighpassQ;
     
-    int notecounter = 0;
+    //store last sample position
+    double lastsourceSamplePosition = 0;
+    
 };
 

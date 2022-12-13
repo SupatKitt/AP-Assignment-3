@@ -21,13 +21,15 @@ AudioProgramming_AMB_SynthAudioProcessor::AudioProgramming_AMB_SynthAudioProcess
                      #endif
                        ),
 #endif
-//use parametervaluetreestate function here
+//put parameter ID, name, lowest , highest, default setting here
 apvts(*this, nullptr, "ParameterTreeState", {
+    std::make_unique<juce::AudioParameterChoice>("waveShape", "Wave Shape", StringArray({"Sine", "Saw", "Triangle", "Square" }), 0),
+    std::make_unique<juce::AudioParameterFloat>("masterGain", "Gain Output", 0, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("gain", "Note Gain", 0.001f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("attack", "Attack time", 0.001f, 5.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f),
+    std::make_unique<juce::AudioParameterFloat>("attack", "Note Attack time", 0.001f, 5.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("decay", "Note Decay time", 0.001f, 5.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("sustain", "Note Sustain level", 0.1, 0.9f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("release", "Note Release time", 0.001f, 10.0f, 3.0f),
     std::make_unique<juce::AudioParameterFloat>("sampleGain", "Nature Gain", 0.001f, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("sampleAttack", "Nature attack time", 0.1f, 20.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("sampleDecay", "Nature decay time", 0.1f, 20.0f, 0.5f),
@@ -35,10 +37,10 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("sampleRelease", "Nature release time", 0.1f, 20.0f, 2.0f),
     std::make_unique<juce::AudioParameterFloat>("noteCutoffFreqL", "Note cutoff Frequency", 1, 20000, 20000),
     std::make_unique<juce::AudioParameterFloat>("filterQL", "Note Filter Q L", 0.01, 10.0f, 0.01),
-    std::make_unique<juce::AudioParameterFloat>("sampleWetLevel", "Wet Level", 0, 1.0f, 0),
-    std::make_unique<juce::AudioParameterFloat>("sampleDryLevel", "Dry Level", 0, 1.0f, 1),
-    std::make_unique<juce::AudioParameterFloat>("Width", "Width", 0, 1.0f, 0),
-    std::make_unique<juce::AudioParameterFloat>("sampleRoomSize", "Space Size", 0, 1.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("sampleWetLevel", "Nature Wet Level", 0, 1.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("sampleDryLevel", "Nature Dry Level", 0, 1.0f, 1),
+    std::make_unique<juce::AudioParameterFloat>("width", "Width", 0, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sampleRoomSize", "Space Size", 0, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("sampleLowpassFilter", "Nature Lowpass", 1, 20000, 20000),
     std::make_unique<juce::AudioParameterFloat>("sampleLowpassQ", "Nature Lowpass Q", 0.01, 10.0f, 0.01),
     std::make_unique<juce::AudioParameterFloat>("sampleHighpassFilter", "Nature Highpass", 1, 20000, 1),
@@ -46,36 +48,36 @@ apvts(*this, nullptr, "ParameterTreeState", {
 })
 //constructor
 {
-    // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
-    //for adding another input key
     synth.clearVoices();
     for (int i = 0; i < voiceCount; i++)
     {
-        synth.addVoice(new MySynthVoice() );
+        synth.addVoice(new TongSynthVoice() );
         sampler.addVoice(new TongSamplerVoice());
-        //create the samplevoice to detect the ending of sound, play with binary data number in percent
     }
     synth.clearSounds();
-    // add "sound" to synth use to control parts of keyboard not important right now
-    synth.addSound(new MySynthSound() );
     
+    // add "sound" to synth use to control parts of keyboard
+    synth.addSound(new TongSynthSound() );
     //link parametervalue with the UI, with parameter ID
+    masterGain = apvts.getRawParameterValue("masterGain");
     wetLevel = apvts.getRawParameterValue("sampleWetLevel");
     dryLevel = apvts.getRawParameterValue("sampleDryLevel");
-    width = apvts.getRawParameterValue("Width");
+    width = apvts.getRawParameterValue("width");
     roomSize =  apvts.getRawParameterValue("sampleRoomSize");
     
+    // for linking with Synth and Sampler class
     for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
-        MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
-        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("gain"),
+        TongSynthVoice* voicePtr = dynamic_cast<TongSynthVoice*>(synth.getVoice(voiceNum));
+        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("waveShape"),
+                                            apvts.getRawParameterValue("gain"),
                                             apvts.getRawParameterValue("attack"),
                                             apvts.getRawParameterValue("decay"),
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"),
                                             apvts.getRawParameterValue("noteCutoffFreqL"),
                                             apvts.getRawParameterValue("filterQL")
-                                            );
+                                            ); //link with synth
         
         TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
         samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sampleGain"),
@@ -87,23 +89,19 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                                apvts.getRawParameterValue("sampleLowpassQ"),
                                                apvts.getRawParameterValue("sampleHighpassFilter"),
                                                apvts.getRawParameterValue("sampleHighpassQ")
-                                               );
-//        myRandomInt = randomer.nextInt(6);
-//        switch (myRandomInt)
-//        {
-//            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
-//            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
-//            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
-//            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
-//            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
-//            case 6 :{ sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break ;}
-//            default : sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break;
-        //}
-        
-
-       }
+                                               ); //link with sampler
+        myRandomInt = randomer.nextInt(4);
+        switch (myRandomInt)
+        {
+            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+            default : {sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break;}
+        }
     }
-
+}
 
 AudioProgramming_AMB_SynthAudioProcessor::~AudioProgramming_AMB_SynthAudioProcessor()
 {
@@ -176,11 +174,11 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    // set sample rate for synth, sampler, and reverb.
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
-    //srand(time(NULL));
     reverb.setSampleRate(sampleRate);
-
+    
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -220,43 +218,53 @@ void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<f
     juce::ScopedNoDenormals noDenormals;
     // sound working fine from here with this loop might be some other issue that does not making the loop working
     
-    if (samplecount == 0)
-    {
-        myRandomInt = randomer.nextInt(4);
-        switch (myRandomInt)
-        {
-            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
-            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
-            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
-            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
-            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
-            default : {sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break;}
-        }
-    }
-    
-    if (samplecount == getSampleRate()*9)
-    {
-        samplecount = 0;
-    }
-    samplecount++;
+//    if (samplecount == 0)
+//    {
+//        myRandomInt = randomer.nextInt(4);
+//        switch (myRandomInt)
+//        {
+//            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+//            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+//            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+//            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+//            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+//            default : {sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break;}
+//        }
+//    }
+//    samplecount++;
+//    if (samplecount == 1000)
+//    {
+//        samplecount = 0;
+//    }
 
-    
     juce::Reverb::Parameters reverbParam;
     reverbParam.wetLevel = *wetLevel;
     reverbParam.dryLevel = *dryLevel;
     reverbParam.width = *width;
     reverbParam.roomSize = *roomSize;
     reverb.setParameters(reverbParam);
+    
     buffer.clear();
     
+    //create pointer to buffer array to apply reverb
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
-    sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-    reverb.processStereo(leftChannel, rightChannel, buffer.getNumSamples());
-    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-
     
-
+    //output sample data to buffer
+    sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    //apply gain to buffer with only sample
+    buffer.applyGain(4);
+    
+    //process reverb
+    reverb.processStereo(leftChannel, rightChannel, buffer.getNumSamples());
+    
+    //output synth data to buffer
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    //set master gain
+    buffer.applyGain(*masterGain);
+   
 }
 
 //==============================================================================
@@ -273,6 +281,7 @@ juce::AudioProcessorEditor* AudioProgramming_AMB_SynthAudioProcessor::createEdit
 //==============================================================================
 void AudioProgramming_AMB_SynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    //for presets
     auto state = apvts.copyState();
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
@@ -280,6 +289,7 @@ void AudioProgramming_AMB_SynthAudioProcessor::getStateInformation (juce::Memory
 
 void AudioProgramming_AMB_SynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
+    //for presets
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
     {

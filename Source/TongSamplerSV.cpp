@@ -10,7 +10,7 @@
 
 #include "TongSamplerSV.h"
 
-
+        
         TongSamplerSound::TongSamplerSound (const String& soundName,
                           AudioFormatReader& source,
                           const BigInteger& notes,
@@ -69,15 +69,16 @@
             return dynamic_cast<const TongSamplerSound*> (sound) != nullptr;
         }
 
-void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
-                                                 ,std::atomic<float>* _sAttackParam
-                                                 ,std::atomic<float>* _sDecayParam
-                                                 ,std::atomic<float>* _sSustainParam
-                                                 ,std::atomic<float>* _sReleaseParam
-                                                 ,std::atomic<float>*  _slocalSamplerLowpassFreq
-                                                 ,std::atomic<float>*  _slocalSamplerLowpassQ
-                                                 ,std::atomic<float>*  _slocalSamplerHighpassFreq
-                                                 ,std::atomic<float>*  _slocalSamplerHighpassQ)
+/// connect linkable parameter with constructor
+    void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
+                                                     ,std::atomic<float>* _sAttackParam
+                                                     ,std::atomic<float>* _sDecayParam
+                                                     ,std::atomic<float>* _sSustainParam
+                                                     ,std::atomic<float>* _sReleaseParam
+                                                     ,std::atomic<float>*  _slocalSamplerLowpassFreq
+                                                     ,std::atomic<float>*  _slocalSamplerLowpassQ
+                                                     ,std::atomic<float>*  _slocalSamplerHighpassFreq
+                                                     ,std::atomic<float>*  _slocalSamplerHighpassQ)
 {
         //amplitude related
         masterGain = _sGain;
@@ -87,31 +88,31 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
         releaseParam = _sReleaseParam;
         
 
-    
         //filter related
         localSamplerLowpasscutoffFreq = _slocalSamplerLowpassFreq;
         localSamplerLowpassQ = _slocalSamplerLowpassQ;
         localSamplerHighpassFreq = _slocalSamplerHighpassFreq;
         localSamplerHighpassQ = _slocalSamplerHighpassQ;
     }
-        
-void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
+
+    /// Trigger when push key
+    void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/)
         {
-            notecounter++;
-            
+            //sound goes in here
             if (auto* sound = dynamic_cast<const TongSamplerSound*> (s))
             {
                 pitchRatio = std::pow (2.0, (midiNoteNumber - sound->tmidiRootNote) / 12.0)
                 * sound->tsourceSampleRate / getSampleRate();
                 
+                //set ADSR samplerate and parameter
                 adsr.setSampleRate(getSampleRate());
                 juce::ADSR::Parameters envParam;
-                
                 envParam.attack = *attackParam;
                 envParam.decay = *decayParam;
                 envParam.sustain = *sustainParam;
                 envParam.release = *releaseParam;
-
+                
+                //set ADSR param to ADSR object
                 adsr.setParameters(envParam);
                 
                 
@@ -119,10 +120,13 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                 samplerLowpassFilter.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
                 samplerHighpassFilter.setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), *localSamplerHighpassFreq, *localSamplerHighpassQ));
                 
-                sourceSamplePosition = 0.0;
+                // this allows me to press the same key with different starting point so it can create variation of the samplesound without looping
+                if (sourceSamplePosition != 0)
+                    sourceSamplePosition = lastsourceSamplePosition;
+                
                 lgain = velocity;
                 rgain = velocity;
-                //DBG(lgain);
+                
                 
                 adsr.noteOn();
             }
@@ -134,6 +138,8 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
         
         void TongSamplerVoice::stopNote (float /*velocity*/, bool allowTailOff)
         {
+            // store last sample position
+            lastsourceSamplePosition = sourceSamplePosition;
             
             if (allowTailOff)
             {
@@ -155,6 +161,12 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
 
 
         //==============================================================================
+        /** basically a DSP loop output sound to buffer directly to access must create pointer array to access buffer in ProcessBlock.
+         Use this function in ProcessBlock
+         @param outputBuffer pointer to output
+         @param startSample position of first sample in buffer
+         @param numSamples number of samples in output buffer
+         */
         void TongSamplerVoice::renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
         {
             if (auto* playingSound = static_cast<TongSamplerSound*> (getCurrentlyPlayingSound().get())) // get playing sound from constructor
@@ -180,11 +192,13 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha)
                     : l;
                     
-                    auto envelopeValue = adsr.getNextSample();
                     
+                    auto envelopeValue = adsr.getNextSample();
+                    // multiply velocitu and envelope
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
                     
+                    // filtering process
                     float samplelowpassFilteredL = samplerLowpassFilter.processSingleSampleRaw(l);
                     float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw(r);
                     float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredL);
@@ -192,8 +206,8 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     
                     if (outR != nullptr)
                     {
-                        *outL++ += (sampleHighpassFilteredL * *masterGain)/ notecounter;
-                        *outR++ += (sampleHighpassFilteredR * *masterGain)/ notecounter;
+                        *outL++ += (sampleHighpassFilteredL * *masterGain); // master gain to final sample L/R
+                        *outR++ += (sampleHighpassFilteredR * *masterGain);
                         
                     }
                     else
@@ -205,8 +219,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     
                     if (sourceSamplePosition > playingSound->tlength)
                     {
-                        sourceSamplePosition = 0;
-                        //stopNote (0.0f, false);
+                        sourceSamplePosition = 0; // looping sound
                         break;
                     }
                     

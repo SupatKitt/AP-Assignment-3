@@ -16,26 +16,16 @@ class TongSampler : public juce::Synthesiser
 {
 public:
     
+    /// Register basic format to format manager .wav
     void init()
     {
-        // use to initialize file format and point to the file location
         formatmanager.registerBasicFormats();
-//        juce::File* file = new juce::File("/Users/supatkittawornrat/Desktop/TongLibrary/rawRecording/H6/Car pass by _100122_Edinburgh/ZOOM0001_LR.WAV"); //enter file directory in arguement
-//
-//        // this use to read the file that are pointed to
-//        std::unique_ptr<juce::AudioFormatReader> reader; // wrap audio format reader class with smart pointer to prevent memory leak
-//        //reader->sampleRate;
-//        reader.reset( formatmanager.createReaderFor(*file) ); //reset is a function for unique pointer
-//
-//        juce::BigInteger allNotes;
-//        allNotes.setRange(0, 128, true);
-//
-//        addSound( new juce::SamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) ); //name, format reader, range of notes, centerkey, attack, release, maximumduration
     }
     
-     
+    /// Receive sample call from PluginProcessor
     void setSample(const void* sourceData, size_t sourceDataSize)
     {
+        // flag false in case you want to play same sound at the same time
         if(checker == false)
         {
             formatmanager.registerBasicFormats();
@@ -43,12 +33,10 @@ public:
         }
         
         auto* reader = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(sourceData, sourceDataSize, false));
-        juce::BigInteger allNotes;
-        allNotes.setRange(0, 128, true);
-        addSound( new TongSamplerSound("default", *reader, allNotes, 60, 0, 0.1, 10.0f ) );
-        
+        juce::BigInteger allNotes; // create BigInteger object to store range of available key to play sample
+        allNotes.setRange(0, 128, true); //all key
+        addSound( new TongSamplerSound("default", *reader, allNotes, 60, 0, 0.1, 15.0f ) );
         //name, format reader, range of notes, centerkey, attack, release, maximumduration
-        
         
         
     }

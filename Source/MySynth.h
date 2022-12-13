@@ -12,9 +12,10 @@
 #include <JuceHeader.h>
 #include "Tong_Osc.h" //use here instead synth object here
 #include "Chorus.h"
+#include <vector>
 
 ///subclass intherited from synthesiser sound
-class MySynthSound : public juce::SynthesiserSound
+class TongSynthSound : public juce::SynthesiserSound
 {
 public:
     // trigger synth when get midi note 
@@ -35,10 +36,11 @@ public:
  @updated 2019-06-18
  */
 ///subclass intherited from synthesiser voice
-class MySynthVoice : public juce::SynthesiserVoice
+class TongSynthVoice : public juce::SynthesiserVoice
 {
 public:
-    MySynthVoice() {}
+    //constructor
+    TongSynthVoice() {}
     //--------------------------------------------------------------------------
     /**
      What should be done when a note starts
@@ -48,7 +50,10 @@ public:
      @param SynthesiserSound unused variable
      @param / unused variable
      */
-    void connectEnvelopeParameters(std::atomic<float>* _gain
+    
+    /// connect linkable parameter with constructor
+    void connectEnvelopeParameters(std::atomic<float>* _waveShape
+                                   ,std::atomic<float>* _gain
                                    ,std::atomic<float>* _attackParam
                                    ,std::atomic<float>* _decayParam
                                    ,std::atomic<float>* _sustainParam
@@ -56,6 +61,9 @@ public:
                                    ,std::atomic<float>* _noteLowpasscutoffFreqL
                                    ,std::atomic<float>* _noteLowpassQL)
     {
+        //dropDown waveshape
+        waveShape = _waveShape;
+        
         // amplitude parameter
         gain = _gain;
         attackParam = _attackParam;
@@ -69,23 +77,16 @@ public:
 
     }
     
-
-//    /// millisecond to sample rate converter
-//    float msConverter (float ms)
-//    {
-//        int milliseconds = 1000;
-//        float   samplerate = getSampleRate();
-//        float sampleratePerMillisecond = samplerate / milliseconds;
-//        float returnSampleRate = sampleratePerMillisecond * ms;
-//        return returnSampleRate;
-//    }
-    
-    // ASK how the midi data pass here is it becuase MySynthVoice is inherited from SynthesiserVoice class?
-    /// very much like prepare to play in PluginProcessor
+    /// very much like prepareToPlay in PluginProcessor
     void startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound*, int /*currentPitchWheelPosition*/) override
     {
+        
         // set sampleRate for oscillator
-        osc.setSampleRate(getSampleRate());
+        sineOsc.setSampleRate(getSampleRate());
+        sawOsc.setSampleRate(getSampleRate());
+        triOsc.setSampleRate(getSampleRate());
+        sqosc.setSampleRate(getSampleRate());
+        
         // can set adsr parameter in constructor because it is public
         env.setSampleRate(getSampleRate());
         
@@ -107,7 +108,11 @@ public:
         localVelocity = velocity;
         
         float freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-        osc.setFrequency(freq);
+        sineOsc.setFrequency(freq);
+        sawOsc.setFrequency(freq);
+        triOsc.setFrequency(freq);
+        sqosc.setFrequency(freq);
+        
         playing = true;
         
         //DBG("StartNote");
@@ -124,8 +129,6 @@ public:
     void stopNote(float /*velocity*/, bool allowTailOff) override
     {
         env.noteOff(); // release start when release note(stopNote)
-//        clearCurrentNote();
-//        playing = false; // if put here the note will stop when you release the key
     }
     
     //--------------------------------------------------------------------------
@@ -149,15 +152,28 @@ public:
                  //use starSample becuase the buffer might not start at 0 but startsomewhere in between so we start there to sync with the buffer
                  for (int i = startSample; i < numSamples+startSample ; i++ )
                  {
-                     float envVal = env.getNextSample(); // if make an envelop filter it will end up here
-                     float sineVal = osc.process() * envVal * localVelocity;
+                     float envVal = env.getNextSample();
+                     
+                     float signalVal;
+                     
+                     //switch case recieve from dropdown menu to change waveshape
+                     int choice = *waveShape;
+                     switch(choice)
+                     {
+                         case 0 :{ signalVal = sineOsc.process() * envVal * localVelocity; break;}
+                         case 1 :{ signalVal = sawOsc.process() * envVal * localVelocity; break;}
+                         case 2 :{ signalVal = triOsc.process() * envVal * localVelocity; break;}
+                         case 3 :{signalVal = sqosc.process() * envVal * localVelocity; break;}
+                         default:{signalVal = sineOsc.process() * envVal * localVelocity; break;}
+                     }
+                     
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
-                     float filteredSamp = filterL.processSingleSampleRaw(sineVal);
+                     float filteredSamp = filterL.processSingleSampleRaw(signalVal);
                      
-                     left[i] += filteredSamp *  *gain;
-                     right[i] += filteredSamp *  *gain;
+                     left[i] += (filteredSamp *  *gain);
+                     right[i] += (filteredSamp *  *gain);
                      
-                     if(! env.isActive())//move stop note to here (! means if envelope is not active)
+                     if(! env.isActive()) //move stop note to here (! means if envelope is not active)
                      {
                          clearCurrentNote();
                          playing = false; // when putted here the note will stop when there are no more samples to run
@@ -179,7 +195,7 @@ public:
             //use for validate midi input -- inherited from synth sound to MySynthSound
          bool canPlaySound (juce::SynthesiserSound* sound) override
          {
-             return dynamic_cast<MySynthSound*> (sound) != nullptr;
+             return dynamic_cast<TongSynthSound*> (sound) != nullptr;
          }
          //--------------------------------------------------------------------------
      private:
@@ -191,10 +207,15 @@ public:
          /// a random object for use in our test noise function
          //juce::Random random;
             
-        SineOsc osc;
+        SineOsc sineOsc;
+        TriangleOsc triOsc;
+        Phasor sawOsc;
+        SquareOsc sqosc;
         juce::ADSR env;
     
         float localVelocity;
+    
+        std::atomic<float>* waveShape;
         std::atomic<float>* gain;
     
         std::atomic<float>* attackParam;
@@ -209,9 +230,6 @@ public:
         std::atomic<float>*  localNoteLowpassQL;
 
     
-    
 };
 
-
-// disable velocity
 

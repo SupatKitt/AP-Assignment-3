@@ -72,6 +72,7 @@ private:
     
     juce::Synthesiser synth;
     
+    
     int voiceCount = 6;
     
     TongSampler sampler;
@@ -87,6 +88,8 @@ private:
     
     int myRandomInt;
     int samplecount = 0;
+    
+    std::atomic<float>* masterGain;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
