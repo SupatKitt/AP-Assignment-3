@@ -61,10 +61,6 @@ public:
                                    ,std::atomic<float>* _sDecayParam
                                    ,std::atomic<float>* _sSustainParam
                                    ,std::atomic<float>* _sReleaseParam
-                                   ,std::atomic<float>* _sDryLevel
-                                   ,std::atomic<float>* _sWetLevel
-                                   ,std::atomic<float>* _sWidth
-                                   ,std::atomic<float>* _sRoomSize
                                    ,std::atomic<float>*  _slocalSamplerLowpassFreq
                                    ,std::atomic<float>*  _slocalSamplerLowpassQ
                                    ,std::atomic<float>*  _slocalSamplerHighpassFreq
@@ -96,12 +92,6 @@ private:
     std::atomic<float>* sustainParam;
     std::atomic<float>* releaseParam;
     
-    //Reverb
-    juce::Reverb sReverb;
-    std::atomic<float>* dryLevel;
-    std::atomic<float>* wetLevel;
-    std::atomic<float>* roomSize;
-    std::atomic<float>* width;
     
     // Lowpass
     juce::IIRFilter samplerLowpassFilter;

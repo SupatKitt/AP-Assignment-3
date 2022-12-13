@@ -74,10 +74,6 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
                                                  ,std::atomic<float>* _sDecayParam
                                                  ,std::atomic<float>* _sSustainParam
                                                  ,std::atomic<float>* _sReleaseParam
-                                                 ,std::atomic<float>* _sDryLevel
-                                                 ,std::atomic<float>* _sWetLevel
-                                                 ,std::atomic<float>* _sWidth
-                                                 ,std::atomic<float>* _sRoomSize
                                                  ,std::atomic<float>*  _slocalSamplerLowpassFreq
                                                  ,std::atomic<float>*  _slocalSamplerLowpassQ
                                                  ,std::atomic<float>*  _slocalSamplerHighpassFreq
@@ -90,11 +86,7 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
         sustainParam = _sSustainParam;
         releaseParam = _sReleaseParam;
         
-        //reverb related
-        dryLevel =_sDryLevel;
-        wetLevel = _sWetLevel;
-        roomSize = _sRoomSize;
-        width =  _sWidth;
+
     
         //filter related
         localSamplerLowpasscutoffFreq = _slocalSamplerLowpassFreq;
@@ -105,6 +97,8 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
+            
+            
             if (auto* sound = dynamic_cast<const TongSamplerSound*> (s))
             {
                 pitchRatio = std::pow (2.0, (midiNoteNumber - sound->tmidiRootNote) / 12.0)
@@ -120,14 +114,6 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
 
                 adsr.setParameters(envParam);
                 
-                sReverb.setSampleRate(getSampleRate());
-                juce::Reverb::Parameters reverbParam;
-                reverbParam.wetLevel = *wetLevel;
-                reverbParam.dryLevel = *dryLevel;
-                reverbParam.width = *width;
-                reverbParam.roomSize = *roomSize;
-                sReverb.setParameters(reverbParam);
-                sReverb.reset();
                 
                 //set filter parameter
                 samplerLowpassFilter.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
@@ -203,16 +189,16 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw(r);
                     float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredL);
                     float sampleHighpassFilteredR = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredR);
+                    
                     if (outR != nullptr)
                     {
                         *outL++ += sampleHighpassFilteredL * *masterGain;
                         *outR++ += sampleHighpassFilteredR * *masterGain;
-                        //sReverb.processStereo(outL, outR, numSamples);
+                        
                     }
                     else
                     {
                         *outL++ += (l + r) * 0.5f;
-                        sReverb.processMono(outL, numSamples);
                     }
                     
                     sourceSamplePosition += pitchRatio;
@@ -225,6 +211,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     }
                     
                 }
+
             }
         }
         

@@ -42,7 +42,7 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterFloat>("sampleLowpassFilter", "Nature Lowpass", 1, 20000, 20000),
     std::make_unique<juce::AudioParameterFloat>("sampleLowpassQ", "Nature Lowpass Q", 0.01, 10.0f, 0.01),
     std::make_unique<juce::AudioParameterFloat>("sampleHighpassFilter", "Nature Highpass", 1, 20000, 1),
-    std::make_unique<juce::AudioParameterFloat>("sampleHighpassQ", "Nature Highpass Q", 0.01, 10.0f, 0.01)
+    std::make_unique<juce::AudioParameterFloat>("sampleHighpassQ", "Nature Highpass Q", 0.01, 10.0f, 0.01),
 })
 //constructor
 {
@@ -54,13 +54,17 @@ apvts(*this, nullptr, "ParameterTreeState", {
         synth.addVoice(new MySynthVoice() );
         sampler.addVoice(new TongSamplerVoice());
         //create the samplevoice to detect the ending of sound, play with binary data number in percent
-        loopTrigger = i;
     }
     synth.clearSounds();
     // add "sound" to synth use to control parts of keyboard not important right now
     synth.addSound(new MySynthSound() );
     
     //link parametervalue with the UI, with parameter ID
+    wetLevel = apvts.getRawParameterValue("sampleWetLevel");
+    dryLevel = apvts.getRawParameterValue("sampleDryLevel");
+    width = apvts.getRawParameterValue("Width");
+    roomSize =  apvts.getRawParameterValue("sampleRoomSize");
+    
     for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
         MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
@@ -79,19 +83,13 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                                apvts.getRawParameterValue("sampleDecay"),
                                                apvts.getRawParameterValue("sampleSustain"),
                                                apvts.getRawParameterValue("sampleRelease"),
-                                               apvts.getRawParameterValue("sampleWetLevel"),
-                                               apvts.getRawParameterValue("sampleDryLevel"),
-                                               apvts.getRawParameterValue("Width"),
-                                               apvts.getRawParameterValue("sampleRoomSize"),
                                                apvts.getRawParameterValue("sampleLowpassFilter"),
                                                apvts.getRawParameterValue("sampleLowpassQ"),
                                                apvts.getRawParameterValue("sampleHighpassFilter"),
                                                apvts.getRawParameterValue("sampleHighpassQ")
                                                );
-        
-        //myRandomInt = randomer.nextInt(6);
-       // DBG(loopTrigger);
-        switch (loopTrigger)
+        myRandomInt = randomer.nextInt(6);
+        switch (myRandomInt)
         {
             case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
             case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
@@ -181,6 +179,8 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
     //srand(time(NULL));
+    reverb.setSampleRate(sampleRate);
+
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -218,11 +218,20 @@ bool AudioProgramming_AMB_SynthAudioProcessor::isBusesLayoutSupported (const Bus
 void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    bufferSize = buffer.getNumSamples();
+    juce::Reverb::Parameters reverbParam;
+    reverbParam.wetLevel = *wetLevel;
+    reverbParam.dryLevel = *dryLevel;
+    reverbParam.width = *width;
+    reverbParam.roomSize = *roomSize;
+    reverb.setParameters(reverbParam);
     buffer.clear();
-
-    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    float* leftChannel = buffer.getWritePointer(0);
+    float* rightChannel = buffer.getWritePointer(1);
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    reverb.processStereo(leftChannel, rightChannel, buffer.getNumSamples());
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
     
 
 }
