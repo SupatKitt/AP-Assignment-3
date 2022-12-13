@@ -13,6 +13,7 @@
 
 using namespace juce;
 
+/**inherited from SynthesiserSound;  This allows more than one SynthesiserVoice to play the same sound at the same time.*/
 class TongSamplerSound : public juce::SynthesiserSound
 {
 public:
@@ -26,11 +27,11 @@ public:
                       double releaseTimeSecs,
                       double maxSampleLengthSeconds);
     //destructor
-    ~TongSamplerSound();
+    ~TongSamplerSound()override;
     
-    bool appliesToNote (int midiNoteNumber);
+    bool appliesToNote (int midiNoteNumber) override;
     
-    bool appliesToChannel (int /*midiChannel*/);
+    bool appliesToChannel (int /*midiChannel*/) override;
     
     
     
@@ -44,35 +45,73 @@ private:
     
     ADSR::Parameters tparams;
     friend class TongSamplerVoice;
+    
 };
 
 class TongSamplerVoice : public juce::SynthesiserVoice
 {
 public:
-    
+    ///constructor
     TongSamplerVoice();
+    ///destructor
+    ~TongSamplerVoice() override;
     
-    ~TongSamplerVoice();
+    void connectEnvelopeParameters(std::atomic<float>* _sGain
+                                   ,std::atomic<float>* _sAttackParam
+                                   ,std::atomic<float>* _sDecayParam
+                                   ,std::atomic<float>* _sSustainParam
+                                   ,std::atomic<float>* _sReleaseParam
+                                   ,std::atomic<float>* _sDryLevel
+                                   ,std::atomic<float>* _sWetLevel
+                                   ,std::atomic<float>* _sWidth
+                                   ,std::atomic<float>* _sRoomSize
+                                   ,std::atomic<float>*  _slocalSamplerLowpassFreq
+                                   ,std::atomic<float>*  _slocalSamplerLowpassQ
+                                   ,std::atomic<float>*  _slocalSamplerHighpassFreq
+                                   ,std::atomic<float>*  _slocalSamplerHighpassQ);
     
-    bool canPlaySound (SynthesiserSound* sound);
+    bool canPlaySound (SynthesiserSound* sound) override ;
     
-    void startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/);
+    void startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) override ;
     
-    void stopNote (float /*velocity*/, bool allowTailOff);
+    void stopNote (float /*velocity*/, bool allowTailOff) override ;
     
-    void pitchWheelMoved (int /*newValue*/);
+    void pitchWheelMoved (int /*newValue*/) override ;
     
-    void controllerMoved (int /*controllerNumber*/, int /*newValue*/);
+    void controllerMoved (int /*controllerNumber*/, int /*newValue*/) override ;
     
-    void renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples);
+    void renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override ;
+    
     
 private:
     
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
-
+    std::atomic<float>* masterGain;
     ADSR adsr;
+    
+    std::atomic<float>* attackParam;
+    std::atomic<float>* decayParam;
+    std::atomic<float>* sustainParam;
+    std::atomic<float>* releaseParam;
+    
+    //Reverb
+    juce::Reverb sReverb;
+    std::atomic<float>* dryLevel;
+    std::atomic<float>* wetLevel;
+    std::atomic<float>* roomSize;
+    std::atomic<float>* width;
+    
+    // Lowpass
+    juce::IIRFilter samplerLowpassFilter;
+    std::atomic<float>*  localSamplerLowpasscutoffFreq;
+    std::atomic<float>*  localSamplerLowpassQ;
+    
+    // Highpass
+    juce::IIRFilter samplerHighpassFilter;
+    std::atomic<float>*  localSamplerHighpassFreq;
+    std::atomic<float>*  localSamplerHighpassQ;
     
 };
 

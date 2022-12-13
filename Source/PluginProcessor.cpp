@@ -21,12 +21,30 @@ AudioProgramming_AMB_SynthAudioProcessor::AudioProgramming_AMB_SynthAudioProcess
                      #endif
                        ),
 #endif
+//use parametervaluetreestate function here
 apvts(*this, nullptr, "ParameterTreeState", {
+    std::make_unique<juce::AudioParameterFloat>("gain", "Note Gain", 0.001f, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay time", 0.001f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain level", 0.1, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f)
+    std::make_unique<juce::AudioParameterFloat>("release", "Release time", 0.001f, 10.0f, 3.0f),
+    std::make_unique<juce::AudioParameterFloat>("sampleGain", "Nature Gain", 0.001f, 0.9f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sampleAttack", "Nature attack time", 0.1f, 20.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sampleDecay", "Nature decay time", 0.1f, 20.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sampleSustain", "Nature sustain value", 0.1f, 0.9f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("sampleRelease", "Nature release time", 0.1f, 20.0f, 2.0f),
+    std::make_unique<juce::AudioParameterFloat>("noteCutoffFreqL", "Note cutoff Frequency", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat>("filterQL", "Note Filter Q L", 0.01, 10.0f, 0.01),
+    std::make_unique<juce::AudioParameterFloat>("sampleWetLevel", "Wet Level", 0, 1.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("sampleDryLevel", "Dry Level", 0, 1.0f, 1),
+    std::make_unique<juce::AudioParameterFloat>("Width", "Width", 0, 1.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("sampleRoomSize", "Space Size", 0, 1.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("sampleLowpassFilter", "Nature Lowpass", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat>("sampleLowpassQ", "Nature Lowpass Q", 0.01, 10.0f, 0.01),
+    std::make_unique<juce::AudioParameterFloat>("sampleHighpassFilter", "Nature Highpass", 1, 20000, 1),
+    std::make_unique<juce::AudioParameterFloat>("sampleHighpassQ", "Nature Highpass Q", 0.01, 10.0f, 0.01)
 })
+//constructor
 {
     // attackParam = apvts.getRawParameterValue("attack"); // when connect to synth have to be moved to connect to synth
     //for adding another input key
@@ -34,39 +52,60 @@ apvts(*this, nullptr, "ParameterTreeState", {
     for (int i = 0; i < voiceCount; i++)
     {
         synth.addVoice(new MySynthVoice() );
-        sampler.addVoice(new TongSamplerVoice()); //create the samplevoice to detect the ending of sound, play with binary data number in percent
+        sampler.addVoice(new TongSamplerVoice());
+        //create the samplevoice to detect the ending of sound, play with binary data number in percent
+        loopTrigger = i;
     }
     synth.clearSounds();
     // add "sound" to synth use to control parts of keyboard not important right now
     synth.addSound(new MySynthSound() );
     
-    for (int voiceNum=0; voiceNum < voiceCount; voiceNum++)
+    //link parametervalue with the UI, with parameter ID
+    for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
         MySynthVoice* voicePtr = dynamic_cast<MySynthVoice*>(synth.getVoice(voiceNum));
-        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("attack"),
+        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("gain"),
+                                            apvts.getRawParameterValue("attack"),
                                             apvts.getRawParameterValue("decay"),
                                             apvts.getRawParameterValue("sustain"),
-                                            apvts.getRawParameterValue("release"));
+                                            apvts.getRawParameterValue("release"),
+                                            apvts.getRawParameterValue("noteCutoffFreqL"),
+                                            apvts.getRawParameterValue("filterQL")
+                                            );
+        
+        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
+        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sampleGain"),
+                                               apvts.getRawParameterValue("sampleAttack"),
+                                               apvts.getRawParameterValue("sampleDecay"),
+                                               apvts.getRawParameterValue("sampleSustain"),
+                                               apvts.getRawParameterValue("sampleRelease"),
+                                               apvts.getRawParameterValue("sampleWetLevel"),
+                                               apvts.getRawParameterValue("sampleDryLevel"),
+                                               apvts.getRawParameterValue("Width"),
+                                               apvts.getRawParameterValue("sampleRoomSize"),
+                                               apvts.getRawParameterValue("sampleLowpassFilter"),
+                                               apvts.getRawParameterValue("sampleLowpassQ"),
+                                               apvts.getRawParameterValue("sampleHighpassFilter"),
+                                               apvts.getRawParameterValue("sampleHighpassQ")
+                                               );
+        
+        //myRandomInt = randomer.nextInt(6);
+       // DBG(loopTrigger);
+        switch (loopTrigger)
+        {
+            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+            case 6 :{ sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break ;}
+            default : sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break;
+        }
+        
+
+       }
     }
-    sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
-//    sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize);
-//    sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize);
-//    sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize);
-//    sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize);
-    
-   // randNum = randomer.nextInt(4);
-    //DBG(randNum);
-//        switch (randNum)
-//        {
-//            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
-//            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
-//            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
-//            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
-//            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
-//                //default : sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize);
-//
-//        }
-}
+
 
 AudioProgramming_AMB_SynthAudioProcessor::~AudioProgramming_AMB_SynthAudioProcessor()
 {
@@ -141,8 +180,7 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     // initialisation that you need..
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
-    //sampler.setRandNum();
-    //randNum = sampler.getRandNum();
+    //srand(time(NULL));
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -180,11 +218,13 @@ bool AudioProgramming_AMB_SynthAudioProcessor::isBusesLayoutSupported (const Bus
 void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    
+    bufferSize = buffer.getNumSamples();
     buffer.clear();
+
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-    //
+    
+
 }
 
 //==============================================================================
@@ -201,15 +241,21 @@ juce::AudioProcessorEditor* AudioProgramming_AMB_SynthAudioProcessor::createEdit
 //==============================================================================
 void AudioProgramming_AMB_SynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+    {
+        if (xmlState->hasTagName (apvts.state.getType()))
+        {
+            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
+        }
+    }
 }
 
 //==============================================================================

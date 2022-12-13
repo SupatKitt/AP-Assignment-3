@@ -13,7 +13,7 @@
 #include "Tong_Osc.h"
 #include "Tong_Sampler.h"
 #include "TongSamplerSV.h"
-
+#include <ctime>
 //==============================================================================
 /**
 */
@@ -60,18 +60,36 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-private:
+    int getbufferSize()
+    {
+        return bufferSize;
+    }
     
+    
+private:
+    float noteStore;
+    float sampleStore;
     juce::AudioProcessorValueTreeState apvts;
+    
+    //FilterParameter
+    std::atomic<float>* noteLowpasscutoffFreq;
+    std::atomic<float>* noteLowpassQ;
     
     juce::Synthesiser synth;
     
-    int voiceCount = 10;
+    int voiceCount = 6;
     
     TongSampler sampler;
-//    juce::Random randomer;
-//    int randNum;
+    
+    
+    juce::Random randomer;
+    
+    int loopTrigger;
+    
+    int myRandomInt;
 
+    juce::IIRFilter noteLowpass;
+    int bufferSize;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
 };

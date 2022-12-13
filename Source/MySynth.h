@@ -9,7 +9,9 @@
 */
 
 #pragma once
+#include <JuceHeader.h>
 #include "Tong_Osc.h" //use here instead synth object here
+#include "Chorus.h"
 
 ///subclass intherited from synthesiser sound
 class MySynthSound : public juce::SynthesiserSound
@@ -46,23 +48,51 @@ public:
      @param SynthesiserSound unused variable
      @param / unused variable
      */
-    void connectEnvelopeParameters(std::atomic<float>* _attackParam
+    void connectEnvelopeParameters(std::atomic<float>* _gain
+                                   ,std::atomic<float>* _attackParam
                                    ,std::atomic<float>* _decayParam
                                    ,std::atomic<float>* _sustainParam
-                                   ,std::atomic<float>* _releaseParam)
+                                   ,std::atomic<float>* _releaseParam
+                                   ,std::atomic<float>* _noteLowpasscutoffFreqL
+                                   ,std::atomic<float>* _noteLowpassQL)
     {
+        // amplitude parameter
+        gain = _gain;
         attackParam = _attackParam;
         decayParam = _decayParam;
         sustainParam = _sustainParam;
         releaseParam = _releaseParam;
+        
+        // filter parameter
+        localNoteLowpasscutoffFreqL = _noteLowpasscutoffFreqL;
+        localNoteLowpassQL = _noteLowpassQL;
+
     }
-    // ASK how the midi data pass here is it becuase MySynthVoice is inherited from SynthesiserVoice class?
     
+
+//    /// millisecond to sample rate converter
+//    float msConverter (float ms)
+//    {
+//        int milliseconds = 1000;
+//        float   samplerate = getSampleRate();
+//        float sampleratePerMillisecond = samplerate / milliseconds;
+//        float returnSampleRate = sampleratePerMillisecond * ms;
+//        return returnSampleRate;
+//    }
+    
+    // ASK how the midi data pass here is it becuase MySynthVoice is inherited from SynthesiserVoice class?
+    /// very much like prepare to play in PluginProcessor
     void startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound*, int /*currentPitchWheelPosition*/) override
     {
+        // set sampleRate for oscillator
         osc.setSampleRate(getSampleRate());
         // can set adsr parameter in constructor because it is public
         env.setSampleRate(getSampleRate());
+        
+        //set filter parameter
+        filterL.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqL, *localNoteLowpassQL));
+
+        
         // create parameter object
         juce::ADSR::Parameters envParam; //(1.0, 0.3, 0.3, 1)you can put an arguement for ADSR after creating parameter object
         // assign parameter via method in ADSR parameters class
@@ -74,7 +104,7 @@ public:
         
         env.noteOn();
         
-        gain = velocity;
+        localVelocity = velocity;
         
         float freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         osc.setFrequency(freq);
@@ -106,7 +136,7 @@ public:
 
           @param outputBuffer pointer to output
           @param startSample position of first sample in buffer
-          @param numSamples number of smaples in output buffer
+          @param numSamples number of samples in output buffer
           */
          void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override
          {
@@ -120,10 +150,12 @@ public:
                  for (int i = startSample; i < numSamples+startSample ; i++ )
                  {
                      float envVal = env.getNextSample(); // if make an envelop filter it will end up here
-                     float sineVal = osc.process() * envVal * gain;
+                     float sineVal = osc.process() * envVal * localVelocity;
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
-                     left[i] += sineVal* 0.3;
-                     right[i] += sineVal* 0.3;
+                     float filteredSamp = filterL.processSingleSampleRaw(sineVal);
+                     
+                     left[i] += filteredSamp *  *gain;
+                     right[i] += filteredSamp *  *gain;
                      
                      if(! env.isActive())//move stop note to here (! means if envelope is not active)
                      {
@@ -161,10 +193,25 @@ public:
             
         SineOsc osc;
         juce::ADSR env;
-        float gain;
+    
+        float localVelocity;
+        std::atomic<float>* gain;
     
         std::atomic<float>* attackParam;
         std::atomic<float>* decayParam;
         std::atomic<float>* sustainParam;
         std::atomic<float>* releaseParam;
+    
+        juce::IIRFilter filterL;
+    
+    
+        std::atomic<float>*  localNoteLowpasscutoffFreqL;
+        std::atomic<float>*  localNoteLowpassQL;
+
+    
+    
 };
+
+
+// disable velocity
+

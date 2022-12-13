@@ -43,7 +43,7 @@
         
         bool TongSamplerSound::appliesToNote (int midiNoteNumber)
         {
-            return tmidiNotes[midiNoteNumber];
+            return tmidiNotes[midiNoteNumber]; // can enter return true instead
         }
         
         bool TongSamplerSound::appliesToChannel (int /*midiChannel*/)
@@ -57,30 +57,86 @@
         {
             
         }
-        
+         
     TongSamplerVoice::~TongSamplerVoice() //destructor
         {
             
         }
+
         
         bool TongSamplerVoice::canPlaySound (SynthesiserSound* sound)
         {
-            return dynamic_cast<const SamplerSound*> (sound) != nullptr;
+            return dynamic_cast<const TongSamplerSound*> (sound) != nullptr;
         }
+
+void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
+                                                 ,std::atomic<float>* _sAttackParam
+                                                 ,std::atomic<float>* _sDecayParam
+                                                 ,std::atomic<float>* _sSustainParam
+                                                 ,std::atomic<float>* _sReleaseParam
+                                                 ,std::atomic<float>* _sDryLevel
+                                                 ,std::atomic<float>* _sWetLevel
+                                                 ,std::atomic<float>* _sWidth
+                                                 ,std::atomic<float>* _sRoomSize
+                                                 ,std::atomic<float>*  _slocalSamplerLowpassFreq
+                                                 ,std::atomic<float>*  _slocalSamplerLowpassQ
+                                                 ,std::atomic<float>*  _slocalSamplerHighpassFreq
+                                                 ,std::atomic<float>*  _slocalSamplerHighpassQ)
+{
+        //amplitude related
+        masterGain = _sGain;
+        attackParam = _sAttackParam;
+        decayParam = _sDecayParam;
+        sustainParam = _sSustainParam;
+        releaseParam = _sReleaseParam;
         
-        void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/)
+        //reverb related
+        dryLevel =_sDryLevel;
+        wetLevel = _sWetLevel;
+        roomSize = _sRoomSize;
+        width =  _sWidth;
+    
+        //filter related
+        localSamplerLowpasscutoffFreq = _slocalSamplerLowpassFreq;
+        localSamplerLowpassQ = _slocalSamplerLowpassQ;
+        localSamplerHighpassFreq = _slocalSamplerHighpassFreq;
+        localSamplerHighpassQ = _slocalSamplerHighpassQ;
+    }
+        
+void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
-            if (auto* sound = dynamic_cast<const SamplerSound*> (s))
+            if (auto* sound = dynamic_cast<const TongSamplerSound*> (s))
             {
                 pitchRatio = std::pow (2.0, (midiNoteNumber - sound->tmidiRootNote) / 12.0)
                 * sound->tsourceSampleRate / getSampleRate();
                 
+                adsr.setSampleRate(getSampleRate());
+                juce::ADSR::Parameters envParam;
+                
+                envParam.attack = *attackParam;
+                envParam.decay = *decayParam;
+                envParam.sustain = *sustainParam;
+                envParam.release = *releaseParam;
+
+                adsr.setParameters(envParam);
+                
+                sReverb.setSampleRate(getSampleRate());
+                juce::Reverb::Parameters reverbParam;
+                reverbParam.wetLevel = *wetLevel;
+                reverbParam.dryLevel = *dryLevel;
+                reverbParam.width = *width;
+                reverbParam.roomSize = *roomSize;
+                sReverb.setParameters(reverbParam);
+                sReverb.reset();
+                
+                //set filter parameter
+                samplerLowpassFilter.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
+                samplerHighpassFilter.setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), *localSamplerHighpassFreq, *localSamplerHighpassQ));
+                
                 sourceSamplePosition = 0.0;
                 lgain = velocity;
                 rgain = velocity;
-                
-                adsr.setSampleRate (sound->tsourceSampleRate);
-                adsr.setParameters (sound->tparams);
+                //DBG(lgain);
                 
                 adsr.noteOn();
             }
@@ -92,6 +148,7 @@
         
         void TongSamplerVoice::stopNote (float /*velocity*/, bool allowTailOff)
         {
+            
             if (allowTailOff)
             {
                 adsr.noteOff();
@@ -105,12 +162,16 @@
         
         
         void TongSamplerVoice::pitchWheelMoved (int /*newValue*/) {}
+
         void TongSamplerVoice::controllerMoved (int /*controllerNumber*/, int /*newValue*/) {}
-        
+
+
+
+
         //==============================================================================
         void TongSamplerVoice::renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
         {
-            if (auto* playingSound = static_cast<SamplerSound*> (getCurrentlyPlayingSound().get())) // get playing sound from constructor
+            if (auto* playingSound = static_cast<TongSamplerSound*> (getCurrentlyPlayingSound().get())) // get playing sound from constructor
             {
                 // sound goes in here
                 auto& data = *playingSound->tdata;
@@ -122,6 +183,7 @@
                 
                 //setting up array for storing sample
                 while (--numSamples >= 0) //actual processor slower than actual playhead
+                //for (int i = numSamples; i>=0; i--)
                 {
                     auto pos = (int) sourceSamplePosition;
                     auto alpha = (float) (sourceSamplePosition - pos);
@@ -136,16 +198,21 @@
                     
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
-                    // add if statement to loop the sample here
                     
+                    float samplelowpassFilteredL = samplerLowpassFilter.processSingleSampleRaw(l);
+                    float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw(r);
+                    float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredL);
+                    float sampleHighpassFilteredR = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredR);
                     if (outR != nullptr)
                     {
-                        *outL++ += l;
-                        *outR++ += r;
+                        *outL++ += sampleHighpassFilteredL * *masterGain;
+                        *outR++ += sampleHighpassFilteredR * *masterGain;
+                        //sReverb.processStereo(outL, outR, numSamples);
                     }
                     else
                     {
                         *outL++ += (l + r) * 0.5f;
+                        sReverb.processMono(outL, numSamples);
                     }
                     
                     sourceSamplePosition += pitchRatio;
@@ -156,6 +223,7 @@
                         //stopNote (0.0f, false);
                         break;
                     }
+                    
                 }
             }
         }

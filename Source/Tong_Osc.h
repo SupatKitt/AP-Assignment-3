@@ -10,7 +10,9 @@
 #include<cmath>
 class Phasor
 {
-public: // make all of this visible to all scope until see another keyword
+public:
+    
+    virtual ~Phasor(){}
     //Setter
     ///must be called called / initialize first in order to gain sample rate information to calculate in setFrequency()
     void setSampleRate (float samplerate)
@@ -36,18 +38,20 @@ public: // make all of this visible to all scope until see another keyword
         }
         return output(phase); //return the value itself || this initialize virtual function and send float value to output() (child class contain all of this )
     }
+    
     //recieve single element of phase|| this function is use for sending phase data to child class (inheritence)
     virtual float output(float p)
     {
         return p;
     }
     
-private: // for keeping variable safe and work only with function
+private:
      float sampleRate;
      float phase {0};
      float frequency;
      float phaseDelta;
 };
+
 ///Sinusodial Oscillator
 class SineOsc : public Phasor
 {
@@ -57,6 +61,7 @@ public:
     {
         return sin( p * 2 * pi );
     }
+    virtual ~SineOsc(){}
 private:
    const float pi = 3.1415926535897932;
 };
@@ -88,6 +93,9 @@ public:
     {
         pulseWidth = pw;
     }
+    
+    virtual ~SquareOsc(){}
+    
 private:
     
     float pulseWidth = 0.5f ;
@@ -114,6 +122,8 @@ public:
             
     return outVal ;
 }
+    
+    virtual ~TriangleOsc(){}
     
 };
 
