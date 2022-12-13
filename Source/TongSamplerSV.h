@@ -103,5 +103,6 @@ private:
     std::atomic<float>*  localSamplerHighpassFreq;
     std::atomic<float>*  localSamplerHighpassQ;
     
+    int notecounter = 0;
 };
 

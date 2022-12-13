@@ -88,17 +88,17 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                                apvts.getRawParameterValue("sampleHighpassFilter"),
                                                apvts.getRawParameterValue("sampleHighpassQ")
                                                );
-        myRandomInt = randomer.nextInt(6);
-        switch (myRandomInt)
-        {
-            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
-            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
-            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
-            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
-            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
-            case 6 :{ sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break ;}
-            default : sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break;
-        }
+//        myRandomInt = randomer.nextInt(6);
+//        switch (myRandomInt)
+//        {
+//            case 1 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+//            case 2 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+//            case 3 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+//            case 4 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+//            case 5 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+//            case 6 :{ sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break ;}
+//            default : sampler.setSample(BinaryData::TICKCHECK_wav, BinaryData::TICKCHECK_wavSize); break;
+        //}
         
 
        }
@@ -218,6 +218,29 @@ bool AudioProgramming_AMB_SynthAudioProcessor::isBusesLayoutSupported (const Bus
 void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+    // sound working fine from here with this loop might be some other issue that does not making the loop working
+    
+    if (samplecount == 0)
+    {
+        myRandomInt = randomer.nextInt(4);
+        switch (myRandomInt)
+        {
+            case 0 :{ sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break ;}
+            case 1 :{ sampler.setSample(BinaryData::ForestNight2_wav, BinaryData::ForestNight2_wavSize); break ;}
+            case 2 :{ sampler.setSample(BinaryData::ForestNight3_wav, BinaryData::ForestNight3_wavSize); break ;}
+            case 3 :{ sampler.setSample(BinaryData::ForestNight4_wav, BinaryData::ForestNight4_wavSize); break ;}
+            case 4 :{ sampler.setSample(BinaryData::ForestNight5_wav, BinaryData::ForestNight5_wavSize); break ;}
+            default : {sampler.setSample(BinaryData::ForestNight1_wav, BinaryData::ForestNight1_wavSize); break;}
+        }
+    }
+    
+    if (samplecount == getSampleRate()*9)
+    {
+        samplecount = 0;
+    }
+    samplecount++;
+
+    
     juce::Reverb::Parameters reverbParam;
     reverbParam.wetLevel = *wetLevel;
     reverbParam.dryLevel = *dryLevel;

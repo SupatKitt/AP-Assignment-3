@@ -42,7 +42,6 @@ public:
             checker = true;
         }
         
-        
         auto* reader = formatmanager.createReaderFor(std::make_unique<juce::MemoryInputStream>(sourceData, sourceDataSize, false));
         juce::BigInteger allNotes;
         allNotes.setRange(0, 128, true);

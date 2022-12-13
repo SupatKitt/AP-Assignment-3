@@ -97,7 +97,7 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
         {
-            
+            notecounter++;
             
             if (auto* sound = dynamic_cast<const TongSamplerSound*> (s))
             {
@@ -192,8 +192,8 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     
                     if (outR != nullptr)
                     {
-                        *outL++ += sampleHighpassFilteredL * *masterGain;
-                        *outR++ += sampleHighpassFilteredR * *masterGain;
+                        *outL++ += (sampleHighpassFilteredL * *masterGain)/ notecounter;
+                        *outR++ += (sampleHighpassFilteredR * *masterGain)/ notecounter;
                         
                     }
                     else

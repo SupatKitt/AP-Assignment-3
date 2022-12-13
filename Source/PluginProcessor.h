@@ -86,7 +86,8 @@ private:
     std::atomic<float>* width;
     
     int myRandomInt;
-
+    int samplecount = 0;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
 };
