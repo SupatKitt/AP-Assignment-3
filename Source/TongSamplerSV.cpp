@@ -73,13 +73,34 @@ void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
                                                  ,std::atomic<float>* _sAttackParam
                                                  ,std::atomic<float>* _sDecayParam
                                                  ,std::atomic<float>* _sSustainParam
-                                                 ,std::atomic<float>* _sReleaseParam)
-    {
+                                                 ,std::atomic<float>* _sReleaseParam
+                                                 ,std::atomic<float>* _sDryLevel
+                                                 ,std::atomic<float>* _sWetLevel
+                                                 ,std::atomic<float>* _sWidth
+                                                 ,std::atomic<float>* _sRoomSize
+                                                 ,std::atomic<float>*  _slocalSamplerLowpassFreq
+                                                 ,std::atomic<float>*  _slocalSamplerLowpassQ
+                                                 ,std::atomic<float>*  _slocalSamplerHighpassFreq
+                                                 ,std::atomic<float>*  _slocalSamplerHighpassQ)
+{
+        //amplitude related
         masterGain = _sGain;
         attackParam = _sAttackParam;
         decayParam = _sDecayParam;
         sustainParam = _sSustainParam;
         releaseParam = _sReleaseParam;
+        
+        //reverb related
+        dryLevel =_sDryLevel;
+        wetLevel = _sWetLevel;
+        roomSize = _sRoomSize;
+        width =  _sWidth;
+    
+        //filter related
+        localSamplerLowpasscutoffFreq = _slocalSamplerLowpassFreq;
+        localSamplerLowpassQ = _slocalSamplerLowpassQ;
+        localSamplerHighpassFreq = _slocalSamplerHighpassFreq;
+        localSamplerHighpassQ = _slocalSamplerHighpassQ;
     }
         
 void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/) 
@@ -98,6 +119,19 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                 envParam.release = *releaseParam;
 
                 adsr.setParameters(envParam);
+                
+                sReverb.setSampleRate(getSampleRate());
+                juce::Reverb::Parameters reverbParam;
+                reverbParam.wetLevel = *wetLevel;
+                reverbParam.dryLevel = *dryLevel;
+                reverbParam.width = *width;
+                reverbParam.roomSize = *roomSize;
+                sReverb.setParameters(reverbParam);
+                sReverb.reset();
+                
+                //set filter parameter
+                samplerLowpassFilter.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
+                samplerHighpassFilter.setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), *localSamplerHighpassFreq, *localSamplerHighpassQ));
                 
                 sourceSamplePosition = 0.0;
                 lgain = velocity;
@@ -149,6 +183,7 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                 
                 //setting up array for storing sample
                 while (--numSamples >= 0) //actual processor slower than actual playhead
+                //for (int i = numSamples; i>=0; i--)
                 {
                     auto pos = (int) sourceSamplePosition;
                     auto alpha = (float) (sourceSamplePosition - pos);
@@ -164,15 +199,20 @@ void TongSamplerVoice::startNote (int midiNoteNumber, float velocity, Synthesise
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
                     
-                    
+                    float samplelowpassFilteredL = samplerLowpassFilter.processSingleSampleRaw(l);
+                    float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw(r);
+                    float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredL);
+                    float sampleHighpassFilteredR = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredR);
                     if (outR != nullptr)
                     {
-                        *outL++ += l * *masterGain;
-                        *outR++ += r * *masterGain;
+                        *outL++ += sampleHighpassFilteredL * *masterGain;
+                        *outR++ += sampleHighpassFilteredR * *masterGain;
+                        //sReverb.processStereo(outL, outR, numSamples);
                     }
                     else
                     {
                         *outL++ += (l + r) * 0.5f;
+                        sReverb.processMono(outL, numSamples);
                     }
                     
                     sourceSamplePosition += pitchRatio;

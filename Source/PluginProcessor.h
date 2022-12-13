@@ -84,6 +84,8 @@ private:
     
     juce::Random randomer;
     
+    int loopTrigger;
+    
     int myRandomInt;
 
     juce::IIRFilter noteLowpass;

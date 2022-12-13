@@ -69,18 +69,7 @@ public:
 
     }
     
-    ///  multiplier range 0 = no chorus - 100
-    void choruslfomultiplierParameter (float _multiplier)
-    {
-        
-        chorus.setLfoVal(getSampleRate(), 0.44f * _multiplier, 0.55f * _multiplier, 0.66f * _multiplier);
-    }
-    
-    void chorusDelaymultiplierParameter (float _multiplier)
-    {
-        chorus.setLowestHighestDelaytimeSamples(1.5f * _multiplier, 0.2f * _multiplier);
-    }
-    
+
 //    /// millisecond to sample rate converter
 //    float msConverter (float ms)
 //    {
@@ -202,7 +191,7 @@ public:
          /// a random object for use in our test noise function
          //juce::Random random;
             
-        TriangleOsc osc;
+        SineOsc osc;
         juce::ADSR env;
     
         float localVelocity;
@@ -214,19 +203,12 @@ public:
         std::atomic<float>* releaseParam;
     
         juce::IIRFilter filterL;
-        juce::IIRFilter filterR;
     
     
         std::atomic<float>*  localNoteLowpasscutoffFreqL;
         std::atomic<float>*  localNoteLowpassQL;
 
     
-        Chorus chorus;
-        
-        std::atomic<float>* feedBackLength;
-        std::atomic<float>* delaysize;
-        std::atomic<float>* delayTimeMultiplier;
-        std::atomic<float>* lfoValMultiplier;
     
 };
 

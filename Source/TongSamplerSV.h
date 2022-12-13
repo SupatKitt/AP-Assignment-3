@@ -60,7 +60,15 @@ public:
                                    ,std::atomic<float>* _sAttackParam
                                    ,std::atomic<float>* _sDecayParam
                                    ,std::atomic<float>* _sSustainParam
-                                   ,std::atomic<float>* _sReleaseParam);
+                                   ,std::atomic<float>* _sReleaseParam
+                                   ,std::atomic<float>* _sDryLevel
+                                   ,std::atomic<float>* _sWetLevel
+                                   ,std::atomic<float>* _sWidth
+                                   ,std::atomic<float>* _sRoomSize
+                                   ,std::atomic<float>*  _slocalSamplerLowpassFreq
+                                   ,std::atomic<float>*  _slocalSamplerLowpassQ
+                                   ,std::atomic<float>*  _slocalSamplerHighpassFreq
+                                   ,std::atomic<float>*  _slocalSamplerHighpassQ);
     
     bool canPlaySound (SynthesiserSound* sound) override ;
     
@@ -87,6 +95,23 @@ private:
     std::atomic<float>* decayParam;
     std::atomic<float>* sustainParam;
     std::atomic<float>* releaseParam;
+    
+    //Reverb
+    juce::Reverb sReverb;
+    std::atomic<float>* dryLevel;
+    std::atomic<float>* wetLevel;
+    std::atomic<float>* roomSize;
+    std::atomic<float>* width;
+    
+    // Lowpass
+    juce::IIRFilter samplerLowpassFilter;
+    std::atomic<float>*  localSamplerLowpasscutoffFreq;
+    std::atomic<float>*  localSamplerLowpassQ;
+    
+    // Highpass
+    juce::IIRFilter samplerHighpassFilter;
+    std::atomic<float>*  localSamplerHighpassFreq;
+    std::atomic<float>*  localSamplerHighpassQ;
     
 };
 
