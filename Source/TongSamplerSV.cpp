@@ -194,7 +194,7 @@
                     
                     
                     auto envelopeValue = adsr.getNextSample();
-                    // multiply velocitu and envelope
+                    // multiply velocity and envelope
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
                     

@@ -13,7 +13,7 @@
 #include "Tong_Osc.h"
 #include "Tong_Sampler.h"
 #include "TongSamplerSV.h"
-#include <ctime>
+
 //==============================================================================
 /**
 */

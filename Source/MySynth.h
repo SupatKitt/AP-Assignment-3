@@ -11,8 +11,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Tong_Osc.h" //use here instead synth object here
-#include "Chorus.h"
-#include <vector>
+#include "Tong_Detune.h"
 
 ///subclass intherited from synthesiser sound
 class TongSynthSound : public juce::SynthesiserSound
@@ -59,7 +58,8 @@ public:
                                    ,std::atomic<float>* _sustainParam
                                    ,std::atomic<float>* _releaseParam
                                    ,std::atomic<float>* _noteLowpasscutoffFreqL
-                                   ,std::atomic<float>* _noteLowpassQL)
+                                   ,std::atomic<float>* _noteLowpassQL
+                                   )
     {
         //dropDown waveshape
         waveShape = _waveShape;
@@ -112,7 +112,6 @@ public:
         sawOsc.setFrequency(freq);
         triOsc.setFrequency(freq);
         sqosc.setFrequency(freq);
-        
         playing = true;
         
         //DBG("StartNote");
@@ -204,13 +203,13 @@ public:
          /// Should the voice be playing?
          bool playing = false;
 
-         /// a random object for use in our test noise function
-         //juce::Random random;
-            
+        // Main oscillator
         SineOsc sineOsc;
         TriangleOsc triOsc;
         Phasor sawOsc;
         SquareOsc sqosc;
+        
+    
         juce::ADSR env;
     
         float localVelocity;
@@ -228,8 +227,8 @@ public:
     
         std::atomic<float>*  localNoteLowpasscutoffFreqL;
         std::atomic<float>*  localNoteLowpassQL;
+        
 
-    
 };
 
 
