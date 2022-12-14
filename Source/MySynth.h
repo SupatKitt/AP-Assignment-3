@@ -59,6 +59,8 @@ public:
                                    ,std::atomic<float>* _releaseParam
                                    ,std::atomic<float>* _noteLowpasscutoffFreqL
                                    ,std::atomic<float>* _noteLowpassQL
+                                   ,std::atomic<float>* _detuneAmount
+                                   ,std::atomic<float>* _detuneLevel
                                    )
     {
         //dropDown waveshape
@@ -74,7 +76,10 @@ public:
         // filter parameter
         localNoteLowpasscutoffFreqL = _noteLowpasscutoffFreqL;
         localNoteLowpassQL = _noteLowpassQL;
-
+        
+        // detune parameter
+        detuneAmount = _detuneAmount;
+        detuneLevel = _detuneLevel;
     }
     
     /// very much like prepareToPlay in PluginProcessor
@@ -86,9 +91,10 @@ public:
         sawOsc.setSampleRate(getSampleRate());
         triOsc.setSampleRate(getSampleRate());
         sqosc.setSampleRate(getSampleRate());
-        
+        detuner.setDetunerSampleRate(getSampleRate());
         // can set adsr parameter in constructor because it is public
         env.setSampleRate(getSampleRate());
+        detuner.setDetunerSampleRate(getSampleRate());
         
         //set filter parameter
         filterL.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqL, *localNoteLowpassQL));
@@ -112,6 +118,7 @@ public:
         sawOsc.setFrequency(freq);
         triOsc.setFrequency(freq);
         sqosc.setFrequency(freq);
+        localFreq = freq;
         playing = true;
         
         //DBG("StartNote");
@@ -159,15 +166,29 @@ public:
                      int choice = *waveShape;
                      switch(choice)
                      {
-                         case 0 :{ signalVal = sineOsc.process() * envVal * localVelocity; break;}
-                         case 1 :{ signalVal = sawOsc.process() * envVal * localVelocity; break;}
-                         case 2 :{ signalVal = triOsc.process() * envVal * localVelocity; break;}
-                         case 3 :{signalVal = sqosc.process() * envVal * localVelocity; break;}
-                         default:{signalVal = sineOsc.process() * envVal * localVelocity; break;}
+                         case 0 :{ signalVal = sineOsc.process() * envVal * localVelocity; break; }
+                         case 1 :{ signalVal = sawOsc.process() * envVal * localVelocity; break; }
+                         case 2 :{ signalVal = triOsc.process() * envVal * localVelocity; break; }
+                         case 3 :{ signalVal = sqosc.process() * envVal * localVelocity; break; }
+                         default:{ signalVal = sineOsc.process() * envVal * localVelocity; break; }
                      }
                      
+                     //switch case for detune
+                         detuner.setDetuneParam(localFreq,*detuneAmount);
+                         switch(choice)
+                         {
+                             case 0 :{ detuneVal = detuner.sineDetuner() * envVal * localVelocity; break;}
+                             case 1 :{ detuneVal = detuner.sawDetuner() * envVal * localVelocity; break;}
+                             case 2 :{ detuneVal = detuner.TriangleDetuner() * envVal * localVelocity; break;}
+                             case 3 :{ detuneVal = detuner.squareDetuner() * envVal * localVelocity; break;}
+                             default:{ detuneVal = detuner.sineDetuner() * envVal * localVelocity; break;}
+                         }
+//                     }
+                     
+                     detuneVal *= *detuneLevel;
+                     
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
-                     float filteredSamp = filterL.processSingleSampleRaw(signalVal);
+                     float filteredSamp = filterL.processSingleSampleRaw((signalVal+detuneVal)/2);
                      
                      left[i] += (filteredSamp *  *gain);
                      right[i] += (filteredSamp *  *gain);
@@ -228,6 +249,11 @@ public:
         std::atomic<float>*  localNoteLowpasscutoffFreqL;
         std::atomic<float>*  localNoteLowpassQL;
         
+        float localFreq;
+        Detuner detuner;
+        std::atomic<float>* detuneAmount;
+        std::atomic<float>* detuneLevel;
+        float detuneVal;
 
 };
 

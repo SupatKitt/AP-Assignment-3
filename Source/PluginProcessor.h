@@ -13,6 +13,7 @@
 #include "Tong_Osc.h"
 #include "Tong_Sampler.h"
 #include "TongSamplerSV.h"
+#include "Tong_Detune.h"
 
 //==============================================================================
 /**
@@ -91,6 +92,7 @@ private:
     
     std::atomic<float>* masterGain;
     
+    Detuner sawdetune;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProgramming_AMB_SynthAudioProcessor)
 };

@@ -26,8 +26,10 @@ apvts(*this, nullptr, "ParameterTreeState", {
     std::make_unique<juce::AudioParameterChoice>("waveShape", "Wave Shape", StringArray({"Sine", "Saw", "Triangle", "Square" }), 0),
     std::make_unique<juce::AudioParameterFloat>("masterGain", "Gain Output", 0, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("gain", "Note Gain", 0.001f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("attack", "Note Attack time", 0.001f, 5.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("decay", "Note Decay time", 0.001f, 5.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("detuneAmount", "Detune Amount Hz", 0, 150.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("detuneLevel", "Detune Level", 0, 5.0f, 0),
+    std::make_unique<juce::AudioParameterFloat>("attack", "Note Attack time", 0.001f, 10.0f, 0.3f),
+    std::make_unique<juce::AudioParameterFloat>("decay", "Note Decay time", 0.001f, 10.0f, 0.8f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Note Sustain level", 0.1, 0.9f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("release", "Note Release time", 0.001f, 10.0f, 3.0f),
     std::make_unique<juce::AudioParameterFloat>("sampleGain", "Nature Gain", 0.001f, 0.9f, 0.5f),
@@ -76,7 +78,9 @@ apvts(*this, nullptr, "ParameterTreeState", {
                                             apvts.getRawParameterValue("sustain"),
                                             apvts.getRawParameterValue("release"),
                                             apvts.getRawParameterValue("noteCutoffFreqL"),
-                                            apvts.getRawParameterValue("filterQL")
+                                            apvts.getRawParameterValue("filterQL"),
+                                            apvts.getRawParameterValue("detuneAmount"),
+                                            apvts.getRawParameterValue("detuneLevel")
                                             ); //link with synth
         
         TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
@@ -180,7 +184,7 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     synth.setCurrentPlaybackSampleRate(sampleRate);
     sampler.setCurrentPlaybackSampleRate(sampleRate);
     reverb.setSampleRate(sampleRate);
-    
+    sawdetune.setDetunerSampleRate(sampleRate);
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -231,6 +235,7 @@ void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<f
     //create pointer to buffer array to apply reverb
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
+    float numsamples = buffer.getNumSamples();
     
     //output sample data to buffer
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
