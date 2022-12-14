@@ -87,18 +87,15 @@ public:
     {
         
         // set sampleRate for oscillator
-        sineOsc.setSampleRate(getSampleRate());
-        sawOsc.setSampleRate(getSampleRate());
-        triOsc.setSampleRate(getSampleRate());
-        sqosc.setSampleRate(getSampleRate());
+        sineOsc.setSampleRate (getSampleRate());
+        sawOsc.setSampleRate (getSampleRate());
+        triOsc.setSampleRate (getSampleRate());
+        sqosc.setSampleRate (getSampleRate());
         detuner.setDetunerSampleRate(getSampleRate());
         // can set adsr parameter in constructor because it is public
         env.setSampleRate(getSampleRate());
         detuner.setDetunerSampleRate(getSampleRate());
         
-        //set filter parameter
-        filterL.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqL, *localNoteLowpassQL));
-
         
         // create parameter object
         juce::ADSR::Parameters envParam; //(1.0, 0.3, 0.3, 1)you can put an arguement for ADSR after creating parameter object
@@ -107,17 +104,17 @@ public:
         envParam.decay = *decayParam; //in seconds
         envParam.sustain = *sustainParam;// in levels
         envParam.release = *releaseParam;// in seconds
-        env.setParameters(envParam);
+        env.setParameters (envParam);
         
         env.noteOn();
         
         localVelocity = velocity;
         
         float freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-        sineOsc.setFrequency(freq);
-        sawOsc.setFrequency(freq);
-        triOsc.setFrequency(freq);
-        sqosc.setFrequency(freq);
+        sineOsc.setFrequency (freq);
+        sawOsc.setFrequency (freq);
+        triOsc.setFrequency (freq);
+        sqosc.setFrequency (freq);
         localFreq = freq;
         playing = true;
         
@@ -147,7 +144,7 @@ public:
           @param startSample position of first sample in buffer
           @param numSamples number of samples in output buffer
           */
-         void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override
+         void renderNextBlock (juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override
          {
 
              if (playing)
@@ -156,7 +153,7 @@ public:
                  float* right = outputBuffer.getWritePointer(1);
                  
                  //use starSample becuase the buffer might not start at 0 but startsomewhere in between so we start there to sync with the buffer
-                 for (int i = startSample; i < numSamples+startSample ; i++ )
+                 for (int i = startSample ; i < numSamples+startSample ; i++ )
                  {
                      float envVal = env.getNextSample();
                      
@@ -164,7 +161,7 @@ public:
                      
                      //switch case recieve from dropdown menu to change waveshape
                      int choice = *waveShape;
-                     switch(choice)
+                     switch (choice)
                      {
                          case 0 :{ signalVal = sineOsc.process() * envVal * localVelocity; break; }
                          case 1 :{ signalVal = sawOsc.process() * envVal * localVelocity; break; }
@@ -174,8 +171,8 @@ public:
                      }
                      
                      //switch case for detune
-                         detuner.setDetuneParam(localFreq,*detuneAmount);
-                         switch(choice)
+                         detuner.setDetuneParam (localFreq,*detuneAmount);
+                         switch (choice)
                          {
                              case 0 :{ detuneVal = detuner.sineDetuner() * envVal * localVelocity; break;}
                              case 1 :{ detuneVal = detuner.sawDetuner() * envVal * localVelocity; break;}
@@ -188,6 +185,8 @@ public:
                      detuneVal *= *detuneLevel;
                      
                      // += for creating polyphony if = only buffer will stop the note before and start next note if use += next note will be add together with previous note
+                     //set filter parameter
+                     filterL.setCoefficients (juce::IIRCoefficients::makeLowPass(getSampleRate(), *localNoteLowpasscutoffFreqL, *localNoteLowpassQL));
                      float filteredSamp = filterL.processSingleSampleRaw((signalVal+detuneVal)/2);
                      
                      left[i] += (filteredSamp *  *gain);

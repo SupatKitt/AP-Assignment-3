@@ -23,76 +23,74 @@ AudioProgramming_AMB_SynthAudioProcessor::AudioProgramming_AMB_SynthAudioProcess
 #endif
 //put parameter ID, name, lowest , highest, default setting here
 apvts(*this, nullptr, "ParameterTreeState", {
-    std::make_unique<juce::AudioParameterChoice>("waveShape", "Wave Shape", StringArray({"Sine", "Saw", "Triangle", "Square" }), 0),
-    std::make_unique<juce::AudioParameterFloat>("masterGain", "Gain Output", 0, 5.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("gain", "Note Gain", 0.001f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("detuneAmount", "Detune Amount Hz", 0, 150.0f, 0),
-    std::make_unique<juce::AudioParameterFloat>("detuneLevel", "Detune Level", 0, 5.0f, 0),
-    std::make_unique<juce::AudioParameterFloat>("attack", "Note Attack time", 0.001f, 10.0f, 0.3f),
-    std::make_unique<juce::AudioParameterFloat>("decay", "Note Decay time", 0.001f, 10.0f, 0.8f),
-    std::make_unique<juce::AudioParameterFloat>("sustain", "Note Sustain level", 0.1, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("release", "Note Release time", 0.001f, 10.0f, 3.0f),
-    std::make_unique<juce::AudioParameterFloat>("sampleGain", "Nature Gain", 0.001f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleAttack", "Nature attack time", 0.001f, 20.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleDecay", "Nature decay time", 0.001f, 20.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleSustain", "Nature sustain value", 0.1f, 0.9f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleRelease", "Nature release time", 0.001f, 10.0f, 3.0f),
-    std::make_unique<juce::AudioParameterFloat>("noteCutoffFreqL", "Note cutoff Frequency", 1, 20000, 20000),
-    std::make_unique<juce::AudioParameterFloat>("filterQL", "Note Filter Q L", 0.01, 10.0f, 0.01),
-    std::make_unique<juce::AudioParameterFloat>("sampleWetLevel", "Nature Wet Level", 0, 1.0f, 0),
-    std::make_unique<juce::AudioParameterFloat>("sampleDryLevel", "Nature Dry Level", 0, 1.0f, 1),
-    std::make_unique<juce::AudioParameterFloat>("width", "Width", 0, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleRoomSize", "Space Size", 0, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("sampleLowpassFilter", "Nature Lowpass", 1, 20000, 20000),
-    std::make_unique<juce::AudioParameterFloat>("sampleLowpassQ", "Nature Lowpass Q", 0.01, 10.0f, 0.01),
-    std::make_unique<juce::AudioParameterFloat>("sampleHighpassFilter", "Nature Highpass", 1, 20000, 1),
-    std::make_unique<juce::AudioParameterFloat>("sampleHighpassQ", "Nature Highpass Q", 0.01, 10.0f, 0.01),
+    std::make_unique<juce::AudioParameterChoice> ("waveShape", "Wave Shape", StringArray({"Sine", "Saw", "Triangle", "Square" }), 0),
+    std::make_unique<juce::AudioParameterFloat> ("masterGain", "Gain Output", 0.001f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("gain", "Note Gain", 0.001f, 0.9f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("detuneAmount", "Detune Amount Hz", 0.001f, 150.0f, 0.001f),
+    std::make_unique<juce::AudioParameterFloat> ("detuneLevel", "Detune Level", 0.001f, 5.0f, 0.001f),
+    std::make_unique<juce::AudioParameterFloat> ("attack", "Note Attack time", 0.1f, 10.0f, 0.3f),
+    std::make_unique<juce::AudioParameterFloat> ("decay", "Note Decay time", 0.1f, 10.0f, 0.8f),
+    std::make_unique<juce::AudioParameterFloat> ("sustain", "Note Sustain level", 0.1f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("release", "Note Release time", 0.1f, 10.0f, 3.0f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleGain", "Nature Gain", 0.001f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleAttack", "Nature attack time", 0.001f, 20.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleDecay", "Nature decay time", 0.001f, 20.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleSustain", "Nature sustain value", 0.001f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleRelease", "Nature release time", 0.001f, 10.0f, 3.0f),
+    std::make_unique<juce::AudioParameterInt> ("noteCutoffFreqL", "Note Lowpass", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat> ("filterQL", "Note Filter Q L", 0.001, 10.0f, 0.01),
+    std::make_unique<juce::AudioParameterFloat> ("sampleWetLevel", "Nature Wet Level", 0.001f, 1.0f, 0.001f),
+    std::make_unique<juce::AudioParameterFloat> ("width", "Width", 0.1f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat> ("sampleRoomSize", "Space Size", 0.1f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterInt> ("sampleLowpassFilter", "Nature Lowpass", 1, 20000, 20000),
+    std::make_unique<juce::AudioParameterFloat> ("sampleLowpassQ", "Nature Lowpass Q", 0.001f, 10.0f, 0.001f),
+    std::make_unique<juce::AudioParameterInt> ("sampleHighpassFilter", "Nature Highpass", 1, 2000, 1),
+    std::make_unique<juce::AudioParameterFloat> ("sampleHighpassQ", "Nature Highpass Q", 0.001f, 10.0f, 0.001f)
 })
 //constructor
 {
     synth.clearVoices();
-    for (int i = 0; i < voiceCount; i++)
+    for (int i = 0 ; i < voiceCount ; i++)
     {
-        synth.addVoice(new TongSynthVoice() );
-        sampler.addVoice(new TongSamplerVoice());
+        synth.addVoice (new TongSynthVoice() );
+        sampler.addVoice (new TongSamplerVoice());
     }
     synth.clearSounds();
     
     // add "sound" to synth use to control parts of keyboard
-    synth.addSound(new TongSynthSound() );
+    synth.addSound (new TongSynthSound() );
     //link parametervalue with the UI, with parameter ID
-    masterGain = apvts.getRawParameterValue("masterGain");
-    wetLevel = apvts.getRawParameterValue("sampleWetLevel");
-    dryLevel = apvts.getRawParameterValue("sampleDryLevel");
-    width = apvts.getRawParameterValue("width");
-    roomSize =  apvts.getRawParameterValue("sampleRoomSize");
+    masterGain = apvts.getRawParameterValue ("masterGain");
+    wetLevel = apvts.getRawParameterValue ("sampleWetLevel");
+    width = apvts.getRawParameterValue ("width");
+    roomSize =  apvts.getRawParameterValue ("sampleRoomSize");
     
     // for linking with Synth and Sampler class
     for (int voiceNum = 0; voiceNum < voiceCount; voiceNum++)
     {
-        TongSynthVoice* voicePtr = dynamic_cast<TongSynthVoice*>(synth.getVoice(voiceNum));
-        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("waveShape"),
-                                            apvts.getRawParameterValue("gain"),
-                                            apvts.getRawParameterValue("attack"),
-                                            apvts.getRawParameterValue("decay"),
-                                            apvts.getRawParameterValue("sustain"),
-                                            apvts.getRawParameterValue("release"),
-                                            apvts.getRawParameterValue("noteCutoffFreqL"),
-                                            apvts.getRawParameterValue("filterQL"),
-                                            apvts.getRawParameterValue("detuneAmount"),
-                                            apvts.getRawParameterValue("detuneLevel")
+        TongSynthVoice* voicePtr = dynamic_cast<TongSynthVoice*> (synth.getVoice (voiceNum));
+        voicePtr->connectEnvelopeParameters(apvts.getRawParameterValue ("waveShape"),
+                                            apvts.getRawParameterValue ("gain"),
+                                            apvts.getRawParameterValue ("attack"),
+                                            apvts.getRawParameterValue ("decay"),
+                                            apvts.getRawParameterValue ("sustain"),
+                                            apvts.getRawParameterValue ("release"),
+                                            apvts.getRawParameterValue ("noteCutoffFreqL"),
+                                            apvts.getRawParameterValue ("filterQL"),
+                                            apvts.getRawParameterValue ("detuneAmount"),
+                                            apvts.getRawParameterValue ("detuneLevel")
                                             ); //link with synth
         
-        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*>(sampler.getVoice(voiceNum));
-        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue("sampleGain"),
-                                               apvts.getRawParameterValue("sampleAttack"),
-                                               apvts.getRawParameterValue("sampleDecay"),
-                                               apvts.getRawParameterValue("sampleSustain"),
-                                               apvts.getRawParameterValue("sampleRelease"),
-                                               apvts.getRawParameterValue("sampleLowpassFilter"),
-                                               apvts.getRawParameterValue("sampleLowpassQ"),
-                                               apvts.getRawParameterValue("sampleHighpassFilter"),
-                                               apvts.getRawParameterValue("sampleHighpassQ")
+        TongSamplerVoice* samVoicePtr = dynamic_cast<TongSamplerVoice*> (sampler.getVoice (voiceNum));
+        samVoicePtr->connectEnvelopeParameters(apvts.getRawParameterValue ("sampleGain"),
+                                               apvts.getRawParameterValue ("sampleAttack"),
+                                               apvts.getRawParameterValue ("sampleDecay"),
+                                               apvts.getRawParameterValue ("sampleSustain"),
+                                               apvts.getRawParameterValue ("sampleRelease"),
+                                               apvts.getRawParameterValue ("sampleLowpassFilter"),
+                                               apvts.getRawParameterValue ("sampleLowpassQ"),
+                                               apvts.getRawParameterValue ("sampleHighpassFilter"),
+                                               apvts.getRawParameterValue ("sampleHighpassQ")
                                                ); //link with sampler
         
         // sampler change everytime the program is execute
@@ -181,10 +179,10 @@ void AudioProgramming_AMB_SynthAudioProcessor::prepareToPlay (double sampleRate,
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     // set sample rate for synth, sampler, and reverb.
-    synth.setCurrentPlaybackSampleRate(sampleRate);
-    sampler.setCurrentPlaybackSampleRate(sampleRate);
-    reverb.setSampleRate(sampleRate);
-    sawdetune.setDetunerSampleRate(sampleRate);
+    synth.setCurrentPlaybackSampleRate (sampleRate);
+    sampler.setCurrentPlaybackSampleRate (sampleRate);
+    reverb.setSampleRate (sampleRate);
+    sawdetune.setDetunerSampleRate (sampleRate);
 }
 
 void AudioProgramming_AMB_SynthAudioProcessor::releaseResources()
@@ -225,32 +223,30 @@ void AudioProgramming_AMB_SynthAudioProcessor::processBlock (juce::AudioBuffer<f
     // set reverb paramerter
     juce::Reverb::Parameters reverbParam;
     reverbParam.wetLevel = *wetLevel;
-    reverbParam.dryLevel = *dryLevel;
     reverbParam.width = *width;
     reverbParam.roomSize = *roomSize;
-    reverb.setParameters(reverbParam);
+    reverb.setParameters (reverbParam);
     
     buffer.clear();
     
     //create pointer to buffer array to apply reverb
-    float* leftChannel = buffer.getWritePointer(0);
-    float* rightChannel = buffer.getWritePointer(1);
-    float numsamples = buffer.getNumSamples();
+    float* leftChannel = buffer.getWritePointer (0);
+    float* rightChannel = buffer.getWritePointer (1);
     
     //output sample data to buffer
-    sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    sampler.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
     
     //apply gain to buffer with only sample
-    buffer.applyGain(4);
+    buffer.applyGain (4);
     
     //process reverb
-    reverb.processStereo(leftChannel, rightChannel, buffer.getNumSamples());
+    reverb.processStereo (leftChannel, rightChannel, buffer.getNumSamples());
     
     //output synth data to buffer
-    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    synth.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
     
     //set master gain
-    buffer.applyGain(*masterGain);
+    buffer.applyGain (*masterGain);
    
 }
 

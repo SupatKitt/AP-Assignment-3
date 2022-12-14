@@ -70,7 +70,7 @@
         }
 
 /// connect linkable parameter with constructor
-    void TongSamplerVoice::connectEnvelopeParameters(std::atomic<float>* _sGain
+    void TongSamplerVoice::connectEnvelopeParameters (std::atomic<float>* _sGain
                                                      ,std::atomic<float>* _sAttackParam
                                                      ,std::atomic<float>* _sDecayParam
                                                      ,std::atomic<float>* _sSustainParam
@@ -113,12 +113,9 @@
                 envParam.release = *releaseParam;
                 
                 //set ADSR param to ADSR object
-                adsr.setParameters(envParam);
+                adsr.setParameters (envParam);
                 
                 
-                //set filter parameter
-                samplerLowpassFilter.setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
-                samplerHighpassFilter.setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), *localSamplerHighpassFreq, *localSamplerHighpassQ));
                 
                 // this allows me to press the same key with different starting point so it can create variation of the samplesound without looping
                 if (sourceSamplePosition != 0)
@@ -181,7 +178,7 @@
                 
                 //setting up array for storing sample
                 while (--numSamples >= 0) //actual processor slower than actual playhead
-                //for (int i = numSamples; i>=0; i--)
+                
                 {
                     auto pos = (int) sourceSamplePosition;
                     auto alpha = (float) (sourceSamplePosition - pos);
@@ -198,11 +195,14 @@
                     l *= lgain * envelopeValue;
                     r *= rgain * envelopeValue;
                     
+                    //set filter parameter
+                    samplerLowpassFilter.setCoefficients (juce::IIRCoefficients::makeLowPass (getSampleRate(), *localSamplerLowpasscutoffFreq, *localSamplerLowpassQ));
+                    samplerHighpassFilter.setCoefficients (juce::IIRCoefficients::makeHighPass (getSampleRate(), *localSamplerHighpassFreq, *localSamplerHighpassQ));
                     // filtering process
-                    float samplelowpassFilteredL = samplerLowpassFilter.processSingleSampleRaw(l);
-                    float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw(r);
-                    float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredL);
-                    float sampleHighpassFilteredR = samplerHighpassFilter.processSingleSampleRaw(samplelowpassFilteredR);
+                    float samplelowpassFilteredL = samplerLowpassFilter.processSingleSampleRaw (l);
+                    float samplelowpassFilteredR = samplerLowpassFilter.processSingleSampleRaw (r);
+                    float sampleHighpassFilteredL = samplerHighpassFilter.processSingleSampleRaw (samplelowpassFilteredL);
+                    float sampleHighpassFilteredR = samplerHighpassFilter.processSingleSampleRaw (samplelowpassFilteredR);
                     
                     if (outR != nullptr)
                     {

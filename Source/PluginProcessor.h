@@ -74,7 +74,7 @@ private:
     juce::Synthesiser synth;
     
     
-    int voiceCount = 6;
+    int voiceCount = 10;
     
     TongSampler sampler;
     
@@ -82,7 +82,6 @@ private:
     juce::Random randomer;
     
     juce::Reverb reverb;
-    std::atomic<float>* dryLevel;
     std::atomic<float>* wetLevel;
     std::atomic<float>* roomSize;
     std::atomic<float>* width;

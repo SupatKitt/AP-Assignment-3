@@ -20,19 +20,19 @@ public:
     ~Detuner() {}
     
     ///Set sampler rate for all osc
-    void setDetunerSampleRate(float sampleRate)
+    void setDetunerSampleRate (float sampleRate)
     {
-        sawDetune1.setSampleRate(sampleRate);
-        sawDetune2.setSampleRate(sampleRate);
+        sawDetune1.setSampleRate (sampleRate);
+        sawDetune2.setSampleRate (sampleRate);
         
-        sineDetune1.setSampleRate(sampleRate);
-        sineDetune2.setSampleRate(sampleRate);
+        sineDetune1.setSampleRate (sampleRate);
+        sineDetune2.setSampleRate (sampleRate);
         
-        triDetune1.setSampleRate(sampleRate);
-        triDetune2.setSampleRate(sampleRate);
+        triDetune1.setSampleRate (sampleRate);
+        triDetune2.setSampleRate (sampleRate);
         
-        sqDetune1.setSampleRate(sampleRate);
-        sqDetune2.setSampleRate(sampleRate);
+        sqDetune1.setSampleRate (sampleRate);
+        sqDetune2.setSampleRate (sampleRate);
     }
     
     ///Set frequency and detune rate then return float (saw)
@@ -40,8 +40,8 @@ public:
     {
         float positive = mainFreq + detunerate;
         float negative = mainFreq - detunerate;
-        sawDetune1.setFrequency(positive);
-        sawDetune2.setFrequency(negative);
+        sawDetune1.setFrequency (positive);
+        sawDetune2.setFrequency (negative);
         float finalPos1 = sawDetune1.process();
         float finalNeg2 = sawDetune2.process();
         return (finalPos1 + finalNeg2)/2;
@@ -52,8 +52,8 @@ public:
     {
         float positive = mainFreq + detunerate;
         float negative = mainFreq - detunerate;
-        sineDetune1.setFrequency(positive);
-        sineDetune2.setFrequency(negative);
+        sineDetune1.setFrequency (positive);
+        sineDetune2.setFrequency (negative);
         float finalPos1 = sineDetune1.process();
         float finalNeg2 = sineDetune2.process();
         return (finalPos1 + finalNeg2)/2;
@@ -64,8 +64,8 @@ public:
     {
         float positive = mainFreq + detunerate;
         float negative = mainFreq - detunerate;
-        triDetune1.setFrequency(positive);
-        triDetune2.setFrequency(negative);
+        triDetune1.setFrequency (positive);
+        triDetune2.setFrequency (negative);
         float finalPos1 = triDetune1.process();
         float finalNeg2 = triDetune2.process();
         return (finalPos1 + finalNeg2)/2;
@@ -75,8 +75,8 @@ public:
     {
         float positive = mainFreq + detunerate;
         float negative = mainFreq - detunerate;
-        sqDetune1.setFrequency(positive);
-        sqDetune2.setFrequency(negative);
+        sqDetune1.setFrequency (positive);
+        sqDetune2.setFrequency (negative);
         float finalPos1 = sqDetune1.process();
         float finalNeg2 = sqDetune2.process();
         return (finalPos1 + finalNeg2)/2;

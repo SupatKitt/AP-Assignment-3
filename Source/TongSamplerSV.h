@@ -56,7 +56,7 @@ public:
     ///destructor
     ~TongSamplerVoice() override;
     
-    void connectEnvelopeParameters(std::atomic<float>* _sGain
+    void connectEnvelopeParameters (std::atomic<float>* _sGain
                                    ,std::atomic<float>* _sAttackParam
                                    ,std::atomic<float>* _sDecayParam
                                    ,std::atomic<float>* _sSustainParam
