@@ -12,7 +12,7 @@
 #include "Tong_Osc.h"
 
 ///This class create 2 detune wave from the main input frequency
-class Detuner : public Phasor
+class Detuner 
 {
 public:
     Detuner() {}
@@ -82,6 +82,7 @@ public:
         return (finalPos1 + finalNeg2)/2;
     }
     
+    ///use this to set detune Parameter
     void setDetuneParam(float _mainFreq, float _detunerate)
     {
         mainFreq = _mainFreq;

@@ -44,7 +44,6 @@ public:
 private:
             
     juce::AudioFormatManager formatmanager;
-    
     bool checker = false ;
 
 };
